@@ -1,15 +1,15 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext } from "react";
 
 export const themes = {
-  light: 'light',
-  dark: 'dark',
-  custom: 'custom'
+  light: "light",
+  dark: "dark",
+  custom: "custom",
 };
 
 export const ThemeContext = createContext({
   themeName: themes.light,
   setThemeName: () => {},
-  themes
+  themes,
 });
 
 export const useTheme = () => useContext(ThemeContext);
