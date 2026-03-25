@@ -1,0 +1,19 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "This is A HackThon Project ",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test "
+  },
+  "repository": {
+    "type": "git",
+    "url": "SmartClass"
+  },
+  "keywords": [
+    "Jay",
+    "Babaki"
+  ],
+  "author": "Codex",
+  "license": "ISC"
+}
