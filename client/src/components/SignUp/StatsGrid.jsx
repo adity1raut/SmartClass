@@ -17,8 +17,12 @@ function StatsGrid() {
           <div className="text-lg mb-1 group-hover:scale-110 transition-transform duration-300">
             {icon}
           </div>
-          <p className="sc-title text-xl sm:text-2xl font-extrabold gradient-text">{value}</p>
-          <p className="text-[10px] text-[var(--muted)] mt-0.5 font-semibold uppercase tracking-wider">{label}</p>
+          <p className="sc-title text-xl sm:text-2xl font-extrabold gradient-text">
+            {value}
+          </p>
+          <p className="text-[10px] text-[var(--muted)] mt-0.5 font-semibold uppercase tracking-wider">
+            {label}
+          </p>
         </div>
       ))}
     </div>

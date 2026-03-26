@@ -16,11 +16,27 @@ import QuizModal from "../components/CourseView/QuizModal";
 import LiveClassModal from "../components/CourseView/LiveClassModal";
 
 const TAB_META = {
-  materials:     { icon: "📄", label: "Materials",    color: "from-blue-500 to-indigo-600" },
-  assignments:   { icon: "📋", label: "Assignments",  color: "from-amber-500 to-orange-500" },
-  quizzes:       { icon: "🧠", label: "Quizzes",      color: "from-pink-500 to-rose-500" },
-  "live-classes":{ icon: "📹", label: "Live Classes", color: "from-red-500 to-red-600" },
-  students:      { icon: "👨‍🎓", label: "Students",    color: "from-emerald-500 to-teal-600" },
+  materials: {
+    icon: "📄",
+    label: "Materials",
+    color: "from-blue-500 to-indigo-600",
+  },
+  assignments: {
+    icon: "📋",
+    label: "Assignments",
+    color: "from-amber-500 to-orange-500",
+  },
+  quizzes: { icon: "🧠", label: "Quizzes", color: "from-pink-500 to-rose-500" },
+  "live-classes": {
+    icon: "📹",
+    label: "Live Classes",
+    color: "from-red-500 to-red-600",
+  },
+  students: {
+    icon: "👨‍🎓",
+    label: "Students",
+    color: "from-emerald-500 to-teal-600",
+  },
 };
 
 function CourseView() {
@@ -48,48 +64,90 @@ function CourseView() {
   const [submissionText, setSubmissionText] = useState({});
   const [gradeForm, setGradeForm] = useState({ score: "", feedback: "" });
   const [gradingSubId, setGradingSubId] = useState(null);
-  const [matForm, setMatForm] = useState({ title: "", description: "", type: "video", fileUrl: "" });
-  const [assForm, setAssForm] = useState({ title: "", description: "", dueDate: "", maxScore: 100 });
+  const [matForm, setMatForm] = useState({
+    title: "",
+    description: "",
+    type: "video",
+    fileUrl: "",
+  });
+  const [assForm, setAssForm] = useState({
+    title: "",
+    description: "",
+    dueDate: "",
+    maxScore: 100,
+  });
   const [quizForm, setQuizForm] = useState({
-    title: "", description: "", timeLimit: 0,
+    title: "",
+    description: "",
+    timeLimit: 0,
     questions: [{ question: "", options: ["", "", "", ""], answer: 0 }],
   });
-  const [lcForm, setLcForm] = useState({ title: "", description: "", scheduledAt: "", meetingLink: "" });
+  const [lcForm, setLcForm] = useState({
+    title: "",
+    description: "",
+    scheduledAt: "",
+    meetingLink: "",
+  });
 
-  const loadCourse = useCallback(() =>
-    fetch(`/api/courses/${id}`).then(r => r.json()).then(d => !d.error && setCourse(d)), [id]);
+  const loadCourse = useCallback(
+    () =>
+      fetch(`/api/courses/${id}`)
+        .then((r) => r.json())
+        .then((d) => !d.error && setCourse(d)),
+    [id],
+  );
 
-  const loadMaterials = useCallback(() =>
-    fetch(`/api/courses/${id}/materials`).then(r => r.json())
-      .then(d => Array.isArray(d) && setMaterials(d)), [id]);
+  const loadMaterials = useCallback(
+    () =>
+      fetch(`/api/courses/${id}/materials`)
+        .then((r) => r.json())
+        .then((d) => Array.isArray(d) && setMaterials(d)),
+    [id],
+  );
 
-  const loadAssignments = useCallback(() =>
-    fetch(`/api/courses/${id}/assignments`).then(r => r.json())
-      .then(d => Array.isArray(d) && setAssignments(d)), [id]);
+  const loadAssignments = useCallback(
+    () =>
+      fetch(`/api/courses/${id}/assignments`)
+        .then((r) => r.json())
+        .then((d) => Array.isArray(d) && setAssignments(d)),
+    [id],
+  );
 
-  const loadQuizzes = useCallback(() =>
-    fetch(`/api/courses/${id}/quizzes`).then(r => r.json())
-      .then(d => Array.isArray(d) && setQuizzes(d)), [id]);
+  const loadQuizzes = useCallback(
+    () =>
+      fetch(`/api/courses/${id}/quizzes`)
+        .then((r) => r.json())
+        .then((d) => Array.isArray(d) && setQuizzes(d)),
+    [id],
+  );
 
-  const loadLiveClasses = useCallback(() =>
-    fetch(`/api/courses/${id}/live-classes`).then(r => r.json())
-      .then(d => Array.isArray(d) && setLiveClasses(d)), [id]);
+  const loadLiveClasses = useCallback(
+    () =>
+      fetch(`/api/courses/${id}/live-classes`)
+        .then((r) => r.json())
+        .then((d) => Array.isArray(d) && setLiveClasses(d)),
+    [id],
+  );
 
   const loadStudents = useCallback(() => {
     const qs = isTeacher ? `?teacherId=${user.id}` : "";
-    fetch(`/api/courses/${id}/students${qs}`).then(r => r.json())
-      .then(d => d.students && setStudents(d.students));
+    fetch(`/api/courses/${id}/students${qs}`)
+      .then((r) => r.json())
+      .then((d) => d.students && setStudents(d.students));
   }, [id, isTeacher, user.id]);
 
   const loadProgress = useCallback(() => {
     if (isTeacher) return;
-    fetch(`/api/courses/${id}/materials/progress?studentId=${user.id}`).then(r => r.json())
-      .then(d => {
+    fetch(`/api/courses/${id}/materials/progress?studentId=${user.id}`)
+      .then((r) => r.json())
+      .then((d) => {
         if (!d.error) {
           setMatProgress(d.progress ?? 0);
-          setCompletedMats(new Set(
-            (d.materials || []).filter(m => m.isCompleted).map(m => m.id)
-          ));
+          setCompletedMats(
+            new Set(
+              (d.materials || []).filter((m) => m.isCompleted).map((m) => m.id),
+            ),
+          );
         }
       });
   }, [id, isTeacher, user.id]);
@@ -106,30 +164,39 @@ function CourseView() {
 
   useEffect(() => {
     if (isTeacher || assignments.length === 0) return;
-    assignments.forEach(a => {
+    assignments.forEach((a) => {
       fetch(`/api/assignments/${a.id}/my-submission?studentId=${user.id}`)
-        .then(r => r.json())
-        .then(s => { if (!s.error) setMySubmissions(p => ({ ...p, [a.id]: s })); });
+        .then((r) => r.json())
+        .then((s) => {
+          if (!s.error) setMySubmissions((p) => ({ ...p, [a.id]: s }));
+        });
     });
   }, [assignments, isTeacher, user.id]);
 
   // Material actions
   const saveMaterial = async (e) => {
-    e.preventDefault(); setSaving(true);
+    e.preventDefault();
+    setSaving(true);
     const res = await fetch(`/api/courses/${id}/materials`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...matForm, teacherId: user.id }),
     });
-    if (res.ok) { setModal(null); setMatForm({ title: "", description: "", type: "video", fileUrl: "" }); loadMaterials(); }
+    if (res.ok) {
+      setModal(null);
+      setMatForm({ title: "", description: "", type: "video", fileUrl: "" });
+      loadMaterials();
+    }
     setSaving(false);
   };
 
   const deleteMaterial = async (mid) => {
     await fetch(`/api/courses/${id}/materials/${mid}`, {
-      method: "DELETE", headers: { "Content-Type": "application/json" },
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
     });
-    setMaterials(p => p.filter(m => m.id !== mid));
+    setMaterials((p) => p.filter((m) => m.id !== mid));
   };
 
   const toggleComplete = async (mid) => {
@@ -139,7 +206,7 @@ function CourseView() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ studentId: user.id }),
     });
-    setCompletedMats(prev => {
+    setCompletedMats((prev) => {
       const next = new Set(prev);
       isDone ? next.delete(mid) : next.add(mid);
       return next;
@@ -151,84 +218,128 @@ function CourseView() {
 
   // Assignment actions
   const saveAssignment = async (e) => {
-    e.preventDefault(); setSaving(true);
+    e.preventDefault();
+    setSaving(true);
     const res = await fetch(`/api/courses/${id}/assignments`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...assForm, teacherId: user.id }),
     });
-    if (res.ok) { setModal(null); setAssForm({ title: "", description: "", dueDate: "", maxScore: 100 }); loadAssignments(); }
+    if (res.ok) {
+      setModal(null);
+      setAssForm({ title: "", description: "", dueDate: "", maxScore: 100 });
+      loadAssignments();
+    }
     setSaving(false);
   };
 
   const deleteAssignment = async (aid) => {
     await fetch(`/api/assignments/${aid}`, {
-      method: "DELETE", headers: { "Content-Type": "application/json" },
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
     });
-    setAssignments(p => p.filter(a => a.id !== aid));
-    setExpandedSubs(p => { const n = { ...p }; delete n[aid]; return n; });
+    setAssignments((p) => p.filter((a) => a.id !== aid));
+    setExpandedSubs((p) => {
+      const n = { ...p };
+      delete n[aid];
+      return n;
+    });
   };
 
   const submitAssignment = async (aid, content, isUpdate = false) => {
     if (!isUpdate) {
       if (!content?.trim()) return;
       const res = await fetch(`/api/assignments/${aid}/submit`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId: user.id, content }),
       });
       const data = await res.json();
-      if (!data.error) setMySubmissions(p => ({ ...p, [aid]: data }));
+      if (!data.error) setMySubmissions((p) => ({ ...p, [aid]: data }));
     } else {
-      setSubmissionText(p => ({ ...p, [aid]: content }));
+      setSubmissionText((p) => ({ ...p, [aid]: content }));
     }
   };
 
   const toggleSubs = async (aid) => {
     if (expandedSubs[aid] !== undefined) {
-      setExpandedSubs(p => { const n = { ...p }; delete n[aid]; return n; }); return;
+      setExpandedSubs((p) => {
+        const n = { ...p };
+        delete n[aid];
+        return n;
+      });
+      return;
     }
-    const data = await fetch(`/api/assignments/${aid}/submissions?teacherId=${user.id}`).then(r => r.json());
-    setExpandedSubs(p => ({ ...p, [aid]: Array.isArray(data) ? data : [] }));
+    const data = await fetch(
+      `/api/assignments/${aid}/submissions?teacherId=${user.id}`,
+    ).then((r) => r.json());
+    setExpandedSubs((p) => ({ ...p, [aid]: Array.isArray(data) ? data : [] }));
   };
 
   const gradeSubmission = async (e) => {
     e.preventDefault();
-    const res = await fetch(`/api/assignments/submissions/${gradingSubId}/grade`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ score: Number(gradeForm.score), feedback: gradeForm.feedback, teacherId: user.id }),
-    });
+    const res = await fetch(
+      `/api/assignments/submissions/${gradingSubId}/grade`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          score: Number(gradeForm.score),
+          feedback: gradeForm.feedback,
+          teacherId: user.id,
+        }),
+      },
+    );
     const updated = await res.json();
     if (!updated.error) {
-      setExpandedSubs(p => {
+      setExpandedSubs((p) => {
         const n = { ...p };
         for (const aid in n) {
           if (Array.isArray(n[aid]))
-            n[aid] = n[aid].map(s => s.id === gradingSubId ? { ...s, ...updated } : s);
+            n[aid] = n[aid].map((s) =>
+              s.id === gradingSubId ? { ...s, ...updated } : s,
+            );
         }
         return n;
       });
-      setGradingSubId(null); setGradeForm({ score: "", feedback: "" });
+      setGradingSubId(null);
+      setGradeForm({ score: "", feedback: "" });
     }
   };
 
   // Quiz actions
   const saveQuiz = async (e) => {
     e.preventDefault();
-    if (quizForm.questions.some(q => !q.question || q.options.some(o => !o))) return;
+    if (
+      quizForm.questions.some((q) => !q.question || q.options.some((o) => !o))
+    )
+      return;
     setSaving(true);
     const res = await fetch(`/api/courses/${id}/quizzes`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title: quizForm.title, description: quizForm.description,
-        timeLimit: Number(quizForm.timeLimit) || 0, teacherId: user.id,
-        questions: quizForm.questions.map(q => ({
-          question: q.question, options: q.options, correctOption: q.answer, points: 1,
+        title: quizForm.title,
+        description: quizForm.description,
+        timeLimit: Number(quizForm.timeLimit) || 0,
+        teacherId: user.id,
+        questions: quizForm.questions.map((q) => ({
+          question: q.question,
+          options: q.options,
+          correctOption: q.answer,
+          points: 1,
         })),
       }),
     });
     if (res.ok) {
       setModal(null);
-      setQuizForm({ title: "", description: "", timeLimit: 0, questions: [{ question: "", options: ["", "", "", ""], answer: 0 }] });
+      setQuizForm({
+        title: "",
+        description: "",
+        timeLimit: 0,
+        questions: [{ question: "", options: ["", "", "", ""], answer: 0 }],
+      });
       loadQuizzes();
     }
     setSaving(false);
@@ -236,44 +347,63 @@ function CourseView() {
 
   const deleteQuiz = async (qid) => {
     await fetch(`/api/quizzes/${qid}`, {
-      method: "DELETE", headers: { "Content-Type": "application/json" },
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
     });
-    setQuizzes(p => p.filter(q => q.id !== qid));
+    setQuizzes((p) => p.filter((q) => q.id !== qid));
   };
 
   // Live Class actions
   const saveLiveClass = async (e) => {
-    e.preventDefault(); setSaving(true);
+    e.preventDefault();
+    setSaving(true);
     const res = await fetch(`/api/courses/${id}/live-classes`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...lcForm, teacherId: user.id }),
     });
-    if (res.ok) { setModal(null); setLcForm({ title: "", description: "", scheduledAt: "", meetingLink: "" }); loadLiveClasses(); }
+    if (res.ok) {
+      setModal(null);
+      setLcForm({
+        title: "",
+        description: "",
+        scheduledAt: "",
+        meetingLink: "",
+      });
+      loadLiveClasses();
+    }
     setSaving(false);
   };
 
   const deleteLiveClass = async (lcId) => {
     await fetch(`/api/live-classes/${lcId}`, {
-      method: "DELETE", headers: { "Content-Type": "application/json" },
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
     });
-    setLiveClasses(p => p.filter(lc => lc.id !== lcId));
+    setLiveClasses((p) => p.filter((lc) => lc.id !== lcId));
   };
 
   const setClassStatus = async (lcId, status) => {
     const res = await fetch(`/api/live-classes/${lcId}/status`, {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status, teacherId: user.id }),
     });
     const updated = await res.json();
     if (!updated.error)
-      setLiveClasses(p => p.map(lc => lc.id === lcId ? { ...lc, status: updated.status } : lc));
+      setLiveClasses((p) =>
+        p.map((lc) =>
+          lc.id === lcId ? { ...lc, status: updated.status } : lc,
+        ),
+      );
   };
 
   const joinClass = async (lcId, meetingLink) => {
     await fetch(`/api/live-classes/${lcId}/join`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user.id }),
     });
     if (meetingLink) window.open(meetingLink, "_blank");
@@ -288,7 +418,9 @@ function CourseView() {
             <div className="w-16 h-16 rounded-2xl glass border border-[var(--border)]/30 flex items-center justify-center mx-auto mb-4 animate-pulse">
               <span className="text-2xl">📚</span>
             </div>
-            <p className="text-[var(--muted)] font-semibold">Loading course...</p>
+            <p className="text-[var(--muted)] font-semibold">
+              Loading course...
+            </p>
           </div>
         </div>
         <Footer />
@@ -312,7 +444,6 @@ function CourseView() {
       <Navbar showBack />
 
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
-
         {/* Course Header Banner */}
         <CourseHeader
           course={course}
@@ -326,22 +457,28 @@ function CourseView() {
 
         {/* Two-column layout: Left Sidebar + Content */}
         <div className="flex gap-5 items-start">
-
           {/* ── LEFT SIDEBAR ── */}
-          <aside className="hidden md:flex flex-col w-52 shrink-0 sticky top-4
+          <aside
+            className="hidden md:flex flex-col w-52 shrink-0 sticky top-4
                             animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
-                 style={{ top: "1rem" }}>
-
+            style={{ top: "1rem" }}
+          >
             {/* Sidebar nav card */}
             <div className="glass-heavy rounded-2xl overflow-hidden border border-[var(--border)]/20 shadow-xl">
-
               {/* Sidebar header */}
-              <div className="px-4 py-3.5 border-b border-[var(--border)]/15"
-                   style={{ background: "linear-gradient(135deg, var(--accent)/8%, transparent)" }}>
+              <div
+                className="px-4 py-3.5 border-b border-[var(--border)]/15"
+                style={{
+                  background:
+                    "linear-gradient(135deg, var(--accent)/8%, transparent)",
+                }}
+              >
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]/70 mb-0.5">
                   Course Content
                 </p>
-                <p className="text-xs font-bold text-[var(--text)] truncate">{course.title}</p>
+                <p className="text-xs font-bold text-[var(--text)] truncate">
+                  {course.title}
+                </p>
               </div>
 
               {/* Tab buttons */}
@@ -356,14 +493,20 @@ function CourseView() {
                       className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl
                                   text-sm font-semibold transition-all duration-200 cursor-pointer mb-0.5
                                   relative overflow-hidden
-                                  ${isActive
-                                    ? "text-[var(--accent)]"
-                                    : "text-[var(--muted)] hover:text-[var(--text)]"
+                                  ${
+                                    isActive
+                                      ? "text-[var(--accent)]"
+                                      : "text-[var(--muted)] hover:text-[var(--text)]"
                                   }`}
-                      style={isActive ? {
-                        background: "linear-gradient(90deg, var(--accent)/12%, var(--accent)/4%)",
-                        boxShadow: "inset 3px 0 0 var(--accent)"
-                      } : {}}
+                      style={
+                        isActive
+                          ? {
+                              background:
+                                "linear-gradient(90deg, var(--accent)/12%, var(--accent)/4%)",
+                              boxShadow: "inset 3px 0 0 var(--accent)",
+                            }
+                          : {}
+                      }
                     >
                       {/* Hover bg */}
                       {!isActive && (
@@ -371,23 +514,31 @@ function CourseView() {
                       )}
 
                       {/* Icon */}
-                      <span className={`relative w-8 h-8 rounded-xl flex items-center justify-center text-base shrink-0 transition-all duration-300
-                                        ${isActive
-                                          ? `bg-gradient-to-br ${meta.color} shadow-lg scale-105`
-                                          : "bg-[var(--border)]/15 group-hover:bg-[var(--border)]/25"
-                                        }`}>
+                      <span
+                        className={`relative w-8 h-8 rounded-xl flex items-center justify-center text-base shrink-0 transition-all duration-300
+                                        ${
+                                          isActive
+                                            ? `bg-gradient-to-br ${meta.color} shadow-lg scale-105`
+                                            : "bg-[var(--border)]/15 group-hover:bg-[var(--border)]/25"
+                                        }`}
+                      >
                         {meta.icon}
                       </span>
 
                       {/* Label */}
-                      <span className="relative flex-1 text-left text-xs font-bold truncate">{meta.label}</span>
+                      <span className="relative flex-1 text-left text-xs font-bold truncate">
+                        {meta.label}
+                      </span>
 
                       {/* Count badge */}
-                      <span className={`relative text-[10px] font-black px-2 py-0.5 rounded-lg shrink-0 transition-all duration-200
-                                        ${isActive
-                                          ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                                          : "bg-[var(--border)]/20 text-[var(--muted)] group-hover:bg-[var(--border)]/30"
-                                        }`}>
+                      <span
+                        className={`relative text-[10px] font-black px-2 py-0.5 rounded-lg shrink-0 transition-all duration-200
+                                        ${
+                                          isActive
+                                            ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                                            : "bg-[var(--border)]/20 text-[var(--muted)] group-hover:bg-[var(--border)]/30"
+                                        }`}
+                      >
                         {tabCount[t]}
                       </span>
                     </button>
@@ -399,8 +550,12 @@ function CourseView() {
               {!isTeacher && materials.length > 0 && (
                 <div className="px-4 py-3 border-t border-[var(--border)]/15">
                   <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">Progress</span>
-                    <span className="text-xs font-black text-[var(--accent)]">{matProgress}%</span>
+                    <span className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">
+                      Progress
+                    </span>
+                    <span className="text-xs font-black text-[var(--accent)]">
+                      {matProgress}%
+                    </span>
                   </div>
                   <div className="h-1.5 bg-[var(--border)]/20 rounded-full overflow-hidden">
                     <div
@@ -417,17 +572,42 @@ function CourseView() {
               {/* Quick stats for teacher */}
               {isTeacher && (
                 <div className="px-4 py-3 border-t border-[var(--border)]/15">
-                  <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Overview</p>
+                  <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-2">
+                    Overview
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: "Students", val: course.enrollmentCount || 0, color: "text-emerald-400" },
-                      { label: "Materials", val: materials.length, color: "text-blue-400" },
-                      { label: "Quizzes", val: quizzes.length, color: "text-pink-400" },
-                      { label: "Live", val: liveClasses.length, color: "text-red-400" },
-                    ].map(s => (
-                      <div key={s.label} className="glass rounded-xl p-2 text-center border border-[var(--border)]/10">
-                        <p className={`text-sm font-black ${s.color}`}>{s.val}</p>
-                        <p className="text-[8px] font-bold text-[var(--muted)] uppercase tracking-wider">{s.label}</p>
+                      {
+                        label: "Students",
+                        val: course.enrollmentCount || 0,
+                        color: "text-emerald-400",
+                      },
+                      {
+                        label: "Materials",
+                        val: materials.length,
+                        color: "text-blue-400",
+                      },
+                      {
+                        label: "Quizzes",
+                        val: quizzes.length,
+                        color: "text-pink-400",
+                      },
+                      {
+                        label: "Live",
+                        val: liveClasses.length,
+                        color: "text-red-400",
+                      },
+                    ].map((s) => (
+                      <div
+                        key={s.label}
+                        className="glass rounded-xl p-2 text-center border border-[var(--border)]/10"
+                      >
+                        <p className={`text-sm font-black ${s.color}`}>
+                          {s.val}
+                        </p>
+                        <p className="text-[8px] font-bold text-[var(--muted)] uppercase tracking-wider">
+                          {s.label}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -438,7 +618,6 @@ function CourseView() {
 
           {/* ── MAIN CONTENT ── */}
           <div className="flex-1 min-w-0">
-
             {/* Mobile tab selector */}
             <div className="flex gap-2 overflow-x-auto pb-2 mb-4 md:hidden scrollbar-hide">
               {tabs.map((t) => {
@@ -450,14 +629,17 @@ function CourseView() {
                     onClick={() => setTab(t)}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl whitespace-nowrap
                                 text-xs font-bold transition-all duration-200 cursor-pointer shrink-0
-                                ${isActive
-                                  ? "bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20"
-                                  : "glass border border-[var(--border)]/20 text-[var(--muted)] hover:text-[var(--text)]"
+                                ${
+                                  isActive
+                                    ? "bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20"
+                                    : "glass border border-[var(--border)]/20 text-[var(--muted)] hover:text-[var(--text)]"
                                 }`}
                   >
                     <span>{meta.icon}</span>
                     <span>{meta.label}</span>
-                    <span className={`text-[9px] font-black px-1 py-0.5 rounded ${isActive ? "bg-[var(--accent)]/20 text-[var(--accent)]" : "bg-[var(--border)]/20 text-[var(--muted)]"}`}>
+                    <span
+                      className={`text-[9px] font-black px-1 py-0.5 rounded ${isActive ? "bg-[var(--accent)]/20 text-[var(--accent)]" : "bg-[var(--border)]/20 text-[var(--muted)]"}`}
+                    >
                       {tabCount[t]}
                     </span>
                   </button>
@@ -489,7 +671,10 @@ function CourseView() {
                   onDelete={deleteAssignment}
                   onGrade={(subId, score, feedback) => {
                     setGradingSubId(subId);
-                    setGradeForm({ score: score ?? "", feedback: feedback ?? "" });
+                    setGradeForm({
+                      score: score ?? "",
+                      feedback: feedback ?? "",
+                    });
                   }}
                   onAddClick={() => setModal("assignment")}
                 />
@@ -526,33 +711,40 @@ function CourseView() {
         isOpen={!!gradingSubId}
         gradeForm={gradeForm}
         onSubmit={gradeSubmission}
-        onClose={() => { setGradingSubId(null); setGradeForm({ score: "", feedback: "" }); }}
+        onClose={() => {
+          setGradingSubId(null);
+          setGradeForm({ score: "", feedback: "" });
+        }}
         onChange={setGradeForm}
       />
       <MaterialModal
         isOpen={modal === "material"}
-        form={matForm} saving={saving}
+        form={matForm}
+        saving={saving}
         onSubmit={saveMaterial}
         onClose={() => setModal(null)}
         onChange={setMatForm}
       />
       <AssignmentModal
         isOpen={modal === "assignment"}
-        form={assForm} saving={saving}
+        form={assForm}
+        saving={saving}
         onSubmit={saveAssignment}
         onClose={() => setModal(null)}
         onChange={setAssForm}
       />
       <QuizModal
         isOpen={modal === "quiz"}
-        form={quizForm} saving={saving}
+        form={quizForm}
+        saving={saving}
         onSubmit={saveQuiz}
         onClose={() => setModal(null)}
         onChange={setQuizForm}
       />
       <LiveClassModal
         isOpen={modal === "live-class"}
-        form={lcForm} saving={saving}
+        form={lcForm}
+        saving={saving}
         onSubmit={saveLiveClass}
         onClose={() => setModal(null)}
         onChange={setLcForm}

@@ -33,9 +33,11 @@ function Footer() {
             {/* Brand Section */}
             <div className="col-span-2 flex flex-col gap-4 text-center sm:text-left">
               <div className="flex items-center gap-3 justify-center sm:justify-start">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl 
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xl 
                                 bg-gradient-to-br from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_60%,#7c3aed)] 
-                                text-[var(--accent-contrast)] shadow-[0_8px_24px_-8px_var(--accent)]">
+                                text-[var(--accent-contrast)] shadow-[0_8px_24px_-8px_var(--accent)]"
+                >
                   🎓
                 </div>
                 <div>
@@ -48,7 +50,8 @@ function Footer() {
                 </div>
               </div>
               <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed max-w-xs mx-auto sm:mx-0">
-                Modern learning management platform empowering teachers and students with intelligent tools for the future of education.
+                Modern learning management platform empowering teachers and
+                students with intelligent tools for the future of education.
               </p>
 
               {/* Social Icons */}

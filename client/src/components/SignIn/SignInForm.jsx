@@ -24,7 +24,9 @@ function SignInForm({ onSubmit, loading, error }) {
           Email
         </label>
         <div className="relative">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">📧</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
+            📧
+          </span>
           <input
             className={`${field} pl-10`}
             type="email"
@@ -51,7 +53,9 @@ function SignInForm({ onSubmit, loading, error }) {
           </button>
         </div>
         <div className="relative">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">🔒</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
+            🔒
+          </span>
           <input
             className={`${field} pl-10 pr-14`}
             type={showPassword ? "text" : "password"}
@@ -91,8 +95,10 @@ function SignInForm({ onSubmit, loading, error }) {
 function ErrorMessage({ error }) {
   if (!error) return null;
   return (
-    <div className="text-sm text-red-500 bg-red-500/8 border border-red-500/20 px-4 py-3 rounded-xl 
-                    animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both] flex items-center gap-2 font-medium">
+    <div
+      className="text-sm text-red-500 bg-red-500/8 border border-red-500/20 px-4 py-3 rounded-xl 
+                    animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both] flex items-center gap-2 font-medium"
+    >
       <span>⚠️</span>
       {error}
     </div>

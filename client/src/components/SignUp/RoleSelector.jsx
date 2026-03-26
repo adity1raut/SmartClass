@@ -13,12 +13,15 @@ function RoleSelector({ role, setRole }) {
           onClick={() => setRole(value)}
           className={`py-4 rounded-xl border text-sm font-semibold flex flex-col items-center gap-1.5 
                      cursor-pointer transition-all duration-300 outline-none active:scale-95 
-                     ${role === value
-              ? "sc-role-active"
-              : "glass border-[var(--border)]/50 text-[var(--muted)] hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/5"
-            }`}
+                     ${
+                       role === value
+                         ? "sc-role-active"
+                         : "glass border-[var(--border)]/50 text-[var(--muted)] hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/5"
+                     }`}
         >
-          <span className="text-2xl group-hover:scale-110 transition-transform">{icon}</span>
+          <span className="text-2xl group-hover:scale-110 transition-transform">
+            {icon}
+          </span>
           <span className="font-bold">{label}</span>
           <span className="text-[10px] opacity-60 font-medium">{desc}</span>
         </button>

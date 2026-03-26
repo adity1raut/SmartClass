@@ -24,7 +24,9 @@ function SignUpForm({ onSubmit, loading, error, role, setRole }) {
       <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text)] mb-1 sc-title">
         Get started
       </h2>
-      <p className="text-sm text-[var(--muted)] mb-8 font-medium">Join thousands of learners today</p>
+      <p className="text-sm text-[var(--muted)] mb-8 font-medium">
+        Join thousands of learners today
+      </p>
 
       <RoleSelector role={role} setRole={setRole} />
 
@@ -32,9 +34,13 @@ function SignUpForm({ onSubmit, loading, error, role, setRole }) {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2 sc-input-wrap">
-          <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider ml-1">Full name</label>
+          <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider ml-1">
+            Full name
+          </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">👤</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
+              👤
+            </span>
             <input
               className={`${field} pl-10`}
               type="text"
@@ -47,9 +53,13 @@ function SignUpForm({ onSubmit, loading, error, role, setRole }) {
         </div>
 
         <div className="space-y-2 sc-input-wrap">
-          <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider ml-1">Email</label>
+          <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider ml-1">
+            Email
+          </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">📧</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
+              📧
+            </span>
             <input
               className={`${field} pl-10`}
               type="email"
@@ -62,9 +72,13 @@ function SignUpForm({ onSubmit, loading, error, role, setRole }) {
         </div>
 
         <div className="space-y-2 sc-input-wrap">
-          <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider ml-1">Password</label>
+          <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider ml-1">
+            Password
+          </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">🔒</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] text-sm">
+              🔒
+            </span>
             <input
               className={`${field} pl-10 pr-14`}
               type={showPassword ? "text" : "password"}
@@ -102,7 +116,9 @@ function SignUpForm({ onSubmit, loading, error, role, setRole }) {
           <div className="w-full border-t border-[var(--border)]/30" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="px-3 glass text-[var(--muted)] font-medium rounded-full">or</span>
+          <span className="px-3 glass text-[var(--muted)] font-medium rounded-full">
+            or
+          </span>
         </div>
       </div>
 

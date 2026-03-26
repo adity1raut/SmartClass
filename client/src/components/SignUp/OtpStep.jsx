@@ -92,9 +92,15 @@ function OtpStep({ email, role, onBack }) {
         ← Back
       </button>
 
-      <h2 className="text-2xl font-bold text-[var(--text)] mb-1 sc-title">Check your email</h2>
-      <p className="text-sm text-[var(--muted)] mb-2">We sent a 6-digit code to</p>
-      <p className="text-sm font-semibold text-[var(--accent)] mb-6 truncate">{email}</p>
+      <h2 className="text-2xl font-bold text-[var(--text)] mb-1 sc-title">
+        Check your email
+      </h2>
+      <p className="text-sm text-[var(--muted)] mb-2">
+        We sent a 6-digit code to
+      </p>
+      <p className="text-sm font-semibold text-[var(--accent)] mb-6 truncate">
+        {email}
+      </p>
 
       <ErrorMessage error={error} />
 
