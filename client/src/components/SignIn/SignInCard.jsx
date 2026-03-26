@@ -14,14 +14,20 @@ function SignInCard({ onSubmit, loading, error }) {
     >
       {/* Mobile brand */}
       <div className="flex items-center gap-3 lg:hidden mb-8">
-        <div className="h-11 w-11 rounded-xl flex items-center justify-center text-lg 
+        <div
+          className="h-11 w-11 rounded-xl flex items-center justify-center text-lg 
                         bg-gradient-to-br from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_60%,#7c3aed)] 
-                        text-[var(--accent-contrast)] shadow-[0_8px_24px_-8px_var(--accent)]">
+                        text-[var(--accent-contrast)] shadow-[0_8px_24px_-8px_var(--accent)]"
+        >
           🎓
         </div>
         <div>
-          <p className="sc-title text-xl font-extrabold text-[var(--text)]">SmartClass</p>
-          <p className="text-[11px] text-[var(--muted)] font-medium">Sign in to your account</p>
+          <p className="sc-title text-xl font-extrabold text-[var(--text)]">
+            SmartClass
+          </p>
+          <p className="text-[11px] text-[var(--muted)] font-medium">
+            Sign in to your account
+          </p>
         </div>
       </div>
 
@@ -39,7 +45,9 @@ function SignInCard({ onSubmit, loading, error }) {
           <div className="w-full border-t border-[var(--border)]/30" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="px-3 glass text-[var(--muted)] font-medium rounded-full">or</span>
+          <span className="px-3 glass text-[var(--muted)] font-medium rounded-full">
+            or
+          </span>
         </div>
       </div>
 

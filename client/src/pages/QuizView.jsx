@@ -75,7 +75,11 @@ function QuizView() {
   // Calculate result styling
   const scorePct = result?.percentage ?? 0;
   const scoreCls =
-    scorePct >= 70 ? "text-emerald-600" : scorePct >= 40 ? "text-amber-500" : "text-red-500";
+    scorePct >= 70
+      ? "text-emerald-600"
+      : scorePct >= 40
+        ? "text-amber-500"
+        : "text-red-500";
   const resultEmoji = scorePct >= 70 ? "🎉" : scorePct >= 40 ? "👍" : "💪";
 
   if (!quiz)
@@ -104,7 +108,9 @@ function QuizView() {
                 questionIndex={questionIndex}
                 total={total}
                 selected={answers[questionIndex]}
-                onSelect={(optionIndex) => handleSelectAnswer(questionIndex, optionIndex)}
+                onSelect={(optionIndex) =>
+                  handleSelectAnswer(questionIndex, optionIndex)
+                }
                 disabled={false}
               />
             ))}
@@ -119,7 +125,11 @@ function QuizView() {
           </>
         ) : (
           <>
-            <ResultCard result={result} emoji={resultEmoji} scoreCls={scoreCls} />
+            <ResultCard
+              result={result}
+              emoji={resultEmoji}
+              scoreCls={scoreCls}
+            />
             <ReviewSection quiz={quiz} result={result} />
             <BackButton onClick={() => navigate(-1)} />
           </>

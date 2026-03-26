@@ -13,9 +13,21 @@ function timeAgo(date) {
 }
 
 const THEME_META = {
-  [themeMap.light]: { label: "Light", icon: "☀️", color: "from-amber-400 to-orange-400" },
-  [themeMap.dark]: { label: "Dark", icon: "🌙", color: "from-indigo-500 to-purple-600" },
-  [themeMap.custom]: { label: "Cosmic", icon: "✨", color: "from-violet-500 to-fuchsia-500" },
+  [themeMap.light]: {
+    label: "Light",
+    icon: "☀️",
+    color: "from-amber-400 to-orange-400",
+  },
+  [themeMap.dark]: {
+    label: "Dark",
+    icon: "🌙",
+    color: "from-indigo-500 to-purple-600",
+  },
+  [themeMap.custom]: {
+    label: "Cosmic",
+    icon: "✨",
+    color: "from-violet-500 to-fuchsia-500",
+  },
 };
 
 function Navbar({ showBack }) {
@@ -50,7 +62,12 @@ function Navbar({ showBack }) {
     const socket = getSocket(user.id);
     socket.on("new-course", (notif) => {
       setNotifs((prev) => [
-        { id: notif.id || Date.now(), message: notif.message, createdAt: notif.createdAt, read: false },
+        {
+          id: notif.id || Date.now(),
+          message: notif.message,
+          createdAt: notif.createdAt,
+          read: false,
+        },
         ...prev,
       ]);
     });
@@ -129,10 +146,11 @@ function Navbar({ showBack }) {
       data-theme={themeName}
       className={`sticky top-0 z-50 h-auto sm:h-16 px-4 sm:px-6 py-3 sm:py-0 flex items-center justify-between
                  text-[var(--text)] transition-all duration-500 ease-out
-                 ${scrolled
-          ? "glass-heavy border-b border-[var(--border)]/60 shadow-[0_4px_30px_-8px_rgba(0,0,0,0.25)]"
-          : "bg-transparent border-b border-transparent"
-        }`}
+                 ${
+                   scrolled
+                     ? "glass-heavy border-b border-[var(--border)]/60 shadow-[0_4px_30px_-8px_rgba(0,0,0,0.25)]"
+                     : "bg-transparent border-b border-transparent"
+                 }`}
     >
       {/* Left Section - Logo & Brand */}
       <div className="flex items-center gap-2 sm:gap-5 min-w-0 flex-1">
@@ -182,7 +200,10 @@ function Navbar({ showBack }) {
                        flex items-center gap-1"
             title="Go back"
           >
-            <span className="transition-transform group-hover:-translate-x-1">←</span> Back
+            <span className="transition-transform group-hover:-translate-x-1">
+              ←
+            </span>{" "}
+            Back
           </button>
         )}
       </div>
@@ -202,10 +223,11 @@ function Navbar({ showBack }) {
                 type="button"
                 onClick={() => setThemeName(key)}
                 title={THEME_META[key]?.label || key}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 ${active
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 ${
+                  active
                     ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[0_4px_16px_-4px_var(--accent)] scale-105"
                     : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--accent)]/8"
-                  } active:scale-95`}
+                } active:scale-95`}
               >
                 <span className="mr-1">{THEME_META[key]?.icon || "🎨"}</span>
                 <span className="hidden xl:inline">
@@ -243,7 +265,9 @@ function Navbar({ showBack }) {
                 <p className="text-sm font-bold text-[var(--text)] leading-tight">
                   {user.name}
                 </p>
-                <p className="text-[10px] text-[var(--muted)] font-medium">{user.email}</p>
+                <p className="text-[10px] text-[var(--muted)] font-medium">
+                  {user.email}
+                </p>
               </div>
               <div
                 className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_60%,#ec4899)] 
@@ -285,8 +309,10 @@ function Navbar({ showBack }) {
                              animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]
                              origin-top-right"
                 >
-                  <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]/40
-                                  bg-gradient-to-r from-[var(--accent)]/8 to-transparent">
+                  <div
+                    className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]/40
+                                  bg-gradient-to-r from-[var(--accent)]/8 to-transparent"
+                  >
                     <div>
                       <span className="text-sm font-bold text-[var(--text)]">
                         Notifications
@@ -313,20 +339,25 @@ function Navbar({ showBack }) {
                       <div className="px-4 py-12 text-center text-sm text-[var(--muted)]">
                         <div className="text-4xl mb-3 opacity-40">🔔</div>
                         <p className="font-medium">No notifications yet</p>
-                        <p className="text-xs mt-1 opacity-70">You're all caught up!</p>
+                        <p className="text-xs mt-1 opacity-70">
+                          You're all caught up!
+                        </p>
                       </div>
                     ) : (
                       notifs.map((n, i) => (
                         <div
                           key={n.id}
                           className={`flex gap-3 px-5 py-3.5 border-b border-[var(--border)]/20 last:border-0 
-                                     transition-all duration-300 hover:bg-[var(--accent)]/6 cursor-pointer group ${!n.read ? "bg-[var(--accent)]/6" : ""
-                            }`}
+                                     transition-all duration-300 hover:bg-[var(--accent)]/6 cursor-pointer group ${
+                                       !n.read ? "bg-[var(--accent)]/6" : ""
+                                     }`}
                           style={{ animationDelay: `${i * 30}ms` }}
                         >
                           {!n.read && (
-                            <div className="w-2 h-2 rounded-full bg-[var(--accent)] mt-2 flex-shrink-0 
-                                          group-hover:scale-125 transition-transform shadow-[0_0_8px_var(--accent)]" />
+                            <div
+                              className="w-2 h-2 rounded-full bg-[var(--accent)] mt-2 flex-shrink-0 
+                                          group-hover:scale-125 transition-transform shadow-[0_0_8px_var(--accent)]"
+                            />
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-[var(--text)] leading-snug font-medium">
@@ -353,9 +384,15 @@ function Navbar({ showBack }) {
               aria-label="Menu"
             >
               <div className="flex flex-col gap-1 items-center">
-                <span className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-1.5" : ""}`} />
-                <span className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "opacity-0 scale-0" : ""}`} />
-                <span className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`} />
+                <span
+                  className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
+                />
+                <span
+                  className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "opacity-0 scale-0" : ""}`}
+                />
+                <span
+                  className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
+                />
               </div>
             </button>
 

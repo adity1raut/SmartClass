@@ -1,4 +1,10 @@
-function SubmitButton({ allAnswered, answered, total, onSubmit, isLoading = false }) {
+function SubmitButton({
+  allAnswered,
+  answered,
+  total,
+  onSubmit,
+  isLoading = false,
+}) {
   return (
     <button
       onClick={onSubmit}
@@ -6,10 +12,11 @@ function SubmitButton({ allAnswered, answered, total, onSubmit, isLoading = fals
       className={`w-full py-4 rounded-xl text-base font-bold border-none cursor-pointer 
                  disabled:cursor-not-allowed transition-all duration-300 mt-4 active:scale-98
                  flex items-center justify-center gap-2.5
-                 ${allAnswered
-          ? "sc-btn-glow"
-          : "glass border border-[var(--border)]/50 text-[var(--muted)] disabled:opacity-60"
-        }`}
+                 ${
+                   allAnswered
+                     ? "sc-btn-glow"
+                     : "glass border border-[var(--border)]/50 text-[var(--muted)] disabled:opacity-60"
+                 }`}
     >
       {isLoading ? (
         <>

@@ -17,8 +17,12 @@ function StudentsTab({ students }) {
             👨‍🎓
           </div>
           <div>
-            <p className="text-sm font-bold text-[var(--text)]">Enrolled Students</p>
-            <p className="text-[10px] text-[var(--muted)] font-semibold">{students.length} total enrolled</p>
+            <p className="text-sm font-bold text-[var(--text)]">
+              Enrolled Students
+            </p>
+            <p className="text-[10px] text-[var(--muted)] font-semibold">
+              {students.length} total enrolled
+            </p>
           </div>
         </div>
         <span className="px-3 py-1.5 bg-emerald-500/12 text-emerald-400 rounded-xl text-xs font-black border border-emerald-500/20">
@@ -29,8 +33,12 @@ function StudentsTab({ students }) {
       {students.length === 0 ? (
         <div className="text-center py-16 glass rounded-2xl border border-[var(--border)]/15">
           <div className="text-5xl mb-4">👨‍🎓</div>
-          <p className="text-base font-bold text-[var(--text)] mb-1">No students enrolled yet</p>
-          <p className="text-sm text-[var(--muted)]">Students will appear here once they enroll in this course.</p>
+          <p className="text-base font-bold text-[var(--text)] mb-1">
+            No students enrolled yet
+          </p>
+          <p className="text-sm text-[var(--muted)]">
+            Students will appear here once they enroll in this course.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -45,19 +53,27 @@ function StudentsTab({ students }) {
                 style={{ animationDelay: `${i * 40}ms` }}
               >
                 {/* Avatar */}
-                <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${colorClass} border
+                <div
+                  className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${colorClass} border
                                  flex items-center justify-center text-sm font-black shrink-0
-                                 group-hover:scale-105 transition-transform duration-300`}>
+                                 group-hover:scale-105 transition-transform duration-300`}
+                >
                   {s.name?.charAt(0).toUpperCase()}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-[var(--text)] truncate">{s.name}</p>
-                  <p className="text-[10px] text-[var(--muted)] truncate font-medium">{s.email}</p>
+                  <p className="text-sm font-bold text-[var(--text)] truncate">
+                    {s.name}
+                  </p>
+                  <p className="text-[10px] text-[var(--muted)] truncate font-medium">
+                    {s.email}
+                  </p>
                 </div>
 
-                <div className="w-7 h-7 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center shrink-0
-                                opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div
+                  className="w-7 h-7 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center shrink-0
+                                opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
                   <span className="text-xs text-emerald-400">✓</span>
                 </div>
               </div>
@@ -69,7 +85,8 @@ function StudentsTab({ students }) {
       {students.length > 0 && (
         <div className="mt-4 px-4 py-3 glass rounded-2xl border border-[var(--border)]/10 flex items-center gap-2">
           <span className="text-xs text-[var(--muted)] font-semibold">
-            💡 {students.length} student{students.length !== 1 ? "s" : ""} enrolled in this course
+            💡 {students.length} student{students.length !== 1 ? "s" : ""}{" "}
+            enrolled in this course
           </span>
         </div>
       )}

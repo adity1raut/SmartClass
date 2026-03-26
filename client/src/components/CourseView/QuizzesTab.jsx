@@ -11,7 +11,8 @@ function QuizzesTab({ quizzes, isTeacher, onDelete, onAddClick }) {
             onClick={onAddClick}
             className="flex items-center gap-2 px-5 py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
           >
-            <span className="text-lg font-light leading-none">+</span> Create Quiz
+            <span className="text-lg font-light leading-none">+</span> Create
+            Quiz
           </button>
         </div>
       )}
@@ -19,12 +20,19 @@ function QuizzesTab({ quizzes, isTeacher, onDelete, onAddClick }) {
       {quizzes.length === 0 ? (
         <div className="text-center py-16 glass rounded-2xl border border-[var(--border)]/15">
           <div className="text-5xl mb-4">🧠</div>
-          <p className="text-base font-bold text-[var(--text)] mb-1">No quizzes yet</p>
+          <p className="text-base font-bold text-[var(--text)] mb-1">
+            No quizzes yet
+          </p>
           <p className="text-sm text-[var(--muted)]">
-            {isTeacher ? "Create a quiz to test your students." : "No quizzes have been posted yet."}
+            {isTeacher
+              ? "Create a quiz to test your students."
+              : "No quizzes have been posted yet."}
           </p>
           {isTeacher && (
-            <button onClick={onAddClick} className="mt-5 px-6 py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95">
+            <button
+              onClick={onAddClick}
+              className="mt-5 px-6 py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
+            >
               + Create Quiz
             </button>
           )}
@@ -43,17 +51,23 @@ function QuizzesTab({ quizzes, isTeacher, onDelete, onAddClick }) {
 
               <div className="p-5 flex items-start gap-4">
                 {/* Icon */}
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/10 border border-pink-500/20
-                                flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform duration-300">
+                <div
+                  className="w-11 h-11 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/10 border border-pink-500/20
+                                flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform duration-300"
+                >
                   🧠
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div>
-                      <p className="text-sm font-bold text-[var(--text)] mb-1">{q.title}</p>
+                      <p className="text-sm font-bold text-[var(--text)] mb-1">
+                        {q.title}
+                      </p>
                       {q.description && (
-                        <p className="text-xs text-[var(--muted)] leading-relaxed line-clamp-2">{q.description}</p>
+                        <p className="text-xs text-[var(--muted)] leading-relaxed line-clamp-2">
+                          {q.description}
+                        </p>
                       )}
                     </div>
                     {!q.isActive && (
@@ -88,7 +102,8 @@ function QuizzesTab({ quizzes, isTeacher, onDelete, onAddClick }) {
                     {!isTeacher && (
                       <button
                         onClick={() => navigate(`/quiz/${q.id}`)}
-                        className="flex items-center gap-1.5 px-4 py-2 sc-btn-glow rounded-xl text-xs font-bold cursor-pointer active:scale-95">
+                        className="flex items-center gap-1.5 px-4 py-2 sc-btn-glow rounded-xl text-xs font-bold cursor-pointer active:scale-95"
+                      >
                         Take Quiz →
                       </button>
                     )}
@@ -96,12 +111,14 @@ function QuizzesTab({ quizzes, isTeacher, onDelete, onAddClick }) {
                       <>
                         <button
                           onClick={() => navigate(`/quiz/${q.id}/results`)}
-                          className="px-4 py-2 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded-xl text-xs font-bold border border-[var(--accent)]/15 cursor-pointer transition-all duration-200 active:scale-95">
+                          className="px-4 py-2 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded-xl text-xs font-bold border border-[var(--accent)]/15 cursor-pointer transition-all duration-200 active:scale-95"
+                        >
                           View Results
                         </button>
                         <button
                           onClick={() => onDelete(q.id)}
-                          className="px-4 py-2 bg-red-500/8 hover:bg-red-500/18 text-red-400 rounded-xl text-xs font-bold border border-red-500/20 cursor-pointer transition-all duration-200 active:scale-95">
+                          className="px-4 py-2 bg-red-500/8 hover:bg-red-500/18 text-red-400 rounded-xl text-xs font-bold border border-red-500/20 cursor-pointer transition-all duration-200 active:scale-95"
+                        >
                           Delete
                         </button>
                       </>

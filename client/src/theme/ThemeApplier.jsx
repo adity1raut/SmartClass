@@ -64,7 +64,9 @@ function ThemeApplier({ themeName }) {
     localStorage.setItem("smartclass_theme", themeName);
 
     // Set meta theme-color for mobile browsers
-    const meta = document.querySelector('meta[name="theme-color"]') || document.createElement("meta");
+    const meta =
+      document.querySelector('meta[name="theme-color"]') ||
+      document.createElement("meta");
     meta.name = "theme-color";
     meta.content = current["--bg"];
     if (!meta.parentNode) document.head.appendChild(meta);
