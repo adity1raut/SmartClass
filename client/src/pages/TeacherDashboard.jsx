@@ -3,9 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend, AreaChart, Area
+} from "recharts";
 
 const inputCls =
   "w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 focus:shadow-[0_4px_16px_-4px_var(--accent)] transition-all duration-300 glass text-[var(--text)] placeholder:text-[var(--muted)]/50 hover:border-[var(--accent)]/30";
+
+const CHART_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6"];
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="glass-heavy border border-[var(--border)]/40 rounded-xl px-4 py-3 shadow-2xl text-sm">
+      <p className="font-bold text-[var(--text)] mb-2 text-xs uppercase tracking-wider">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="font-semibold" style={{ color: p.color }}>
+          {p.name}: <span className="font-black">{p.value}</span>
+        </p>
+      ))}
+    </div>
+  );
+};
 
 function TeacherDashboard() {
   const { user } = useAuth();
@@ -38,7 +58,8 @@ function TeacherDashboard() {
     setShowModal(true);
   };
 
-  const openEdit = (c) => {
+  const openEdit = (e, c) => {
+    e.stopPropagation();
     setEditCourse(c);
     setForm({ title: c.title, description: c.description || "", subject: c.subject || "" });
     setError("");
@@ -95,21 +116,42 @@ function TeacherDashboard() {
   const totalQuizzes = data.courses.reduce((s, c) => s + (c.quizCount || 0), 0);
 
   const stats = [
-    { icon: "📚", val: data.totalCourses, label: "Courses", bg: "from-blue-500/15 to-blue-600/5", color: "from-blue-500 to-blue-600" },
-    { icon: "👨‍🎓", val: data.totalStudents, label: "Students", bg: "from-purple-500/15 to-purple-600/5", color: "from-purple-500 to-purple-600" },
-    { icon: "📄", val: totalMaterials, label: "Materials", bg: "from-amber-500/15 to-amber-600/5", color: "from-amber-500 to-amber-600" },
-    { icon: "🧠", val: totalQuizzes, label: "Quizzes", bg: "from-pink-500/15 to-pink-600/5", color: "from-pink-500 to-pink-600" },
-    { icon: "📬", val: data.pendingSubmissions ?? 0, label: "Reviews", bg: "from-emerald-500/15 to-emerald-600/5", color: "from-emerald-500 to-emerald-600" },
-    { icon: "📹", val: data.upcomingClasses?.length ?? 0, label: "Live", bg: "from-indigo-500/15 to-indigo-600/5", color: "from-indigo-500 to-indigo-600" },
+    { icon: "📚", val: data.totalCourses, label: "Courses", bg: "from-blue-500/15 to-blue-600/5", color: "from-blue-500 to-blue-600", shadow: "rgba(99,102,241,0.3)" },
+    { icon: "👨‍🎓", val: data.totalStudents, label: "Students", bg: "from-purple-500/15 to-purple-600/5", color: "from-purple-500 to-purple-600", shadow: "rgba(139,92,246,0.3)" },
+    { icon: "📄", val: totalMaterials, label: "Materials", bg: "from-amber-500/15 to-amber-600/5", color: "from-amber-500 to-amber-600", shadow: "rgba(245,158,11,0.3)" },
+    { icon: "🧠", val: totalQuizzes, label: "Quizzes", bg: "from-pink-500/15 to-pink-600/5", color: "from-pink-500 to-pink-600", shadow: "rgba(236,72,153,0.3)" },
+    { icon: "📬", val: data.pendingSubmissions ?? 0, label: "Reviews", bg: "from-emerald-500/15 to-emerald-600/5", color: "from-emerald-500 to-emerald-600", shadow: "rgba(16,185,129,0.3)" },
+    { icon: "📹", val: data.upcomingClasses?.length ?? 0, label: "Live", bg: "from-indigo-500/15 to-indigo-600/5", color: "from-indigo-500 to-indigo-600", shadow: "rgba(99,102,241,0.3)" },
   ];
+
+  // Chart data
+  const enrollmentData = data.courses.map(c => ({
+    name: c.title.length > 14 ? c.title.slice(0, 14) + "…" : c.title,
+    Students: c.enrollmentCount || 0,
+  }));
+
+  const contentData = data.courses.map(c => ({
+    name: c.title.length > 14 ? c.title.slice(0, 14) + "…" : c.title,
+    Materials: c.materialCount || 0,
+    Quizzes: c.quizCount || 0,
+    Assignments: c.assignmentCount || 0,
+  }));
+
+  const subjectMap = {};
+  data.courses.forEach(c => {
+    const key = c.subject || "Other";
+    subjectMap[key] = (subjectMap[key] || 0) + 1;
+  });
+  const pieData = Object.entries(subjectMap).map(([name, value]) => ({ name, value }));
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col relative overflow-hidden">
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 z-10">
+
         {/* Header */}
-        <div className="mb-12 animate-[slide-down_0.6s_cubic-bezier(0.16,1,0.3,1)_both]">
+        <div className="mb-10 animate-[slide-down_0.6s_cubic-bezier(0.16,1,0.3,1)_both]">
           <div className="flex items-center gap-5 mb-2">
             <div className="text-5xl sm:text-6xl drop-shadow-lg animate-float">👋</div>
             <div>
@@ -135,7 +177,8 @@ function TeacherDashboard() {
             >
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3
                               bg-gradient-to-br ${s.color} shadow-lg
-                              group-hover:scale-110 group-hover:rotate-[-5deg] transition-all duration-500`}>
+                              group-hover:scale-110 group-hover:rotate-[-5deg] transition-all duration-500`}
+                style={{ boxShadow: `0 4px 14px ${s.shadow}` }}>
                 <span className="brightness-0 invert text-sm">{s.icon}</span>
               </div>
               <div className="text-3xl font-extrabold text-[var(--text)] mb-1 tracking-tighter
@@ -147,6 +190,91 @@ function TeacherDashboard() {
             </div>
           ))}
         </div>
+
+        {/* Analytics Charts — only shown when there are courses */}
+        {data.courses.length > 0 && (
+          <div className="mb-12 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]" style={{ animationDelay: "150ms" }}>
+            <h2 className="text-2xl font-extrabold text-[var(--text)] mb-6 flex items-center gap-3 sc-title">
+              <span className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center text-xl">📈</span>
+              Analytics Overview
+            </h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Enrollment bar chart */}
+              <div className="lg:col-span-2 sc-card-premium glass rounded-2xl p-6">
+                <p className="text-sm font-bold text-[var(--text)] mb-1">Student Enrollment per Course</p>
+                <p className="text-xs text-[var(--muted)] mb-5">How many students are enrolled in each course</p>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={enrollmentData} barCategoryGap="35%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "var(--muted)", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "var(--muted)" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)", radius: 8 }} />
+                    <Bar dataKey="Students" radius={[6, 6, 0, 0]} fill="url(#enrollGrad)" />
+                    <defs>
+                      <linearGradient id="enrollGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#6366f1" />
+                        <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.6} />
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Subject distribution pie chart */}
+              <div className="sc-card-premium glass rounded-2xl p-6">
+                <p className="text-sm font-bold text-[var(--text)] mb-1">Course Subjects</p>
+                <p className="text-xs text-[var(--muted)] mb-4">Distribution by subject area</p>
+                {pieData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%" cy="50%"
+                        innerRadius={50} outerRadius={75}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {pieData.map((_, i) => (
+                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend
+                        iconType="circle"
+                        iconSize={8}
+                        formatter={(v) => <span style={{ fontSize: 10, color: "var(--muted)", fontWeight: 600 }}>{v}</span>}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-[200px] flex items-center justify-center text-[var(--muted)] text-sm">No subject data</div>
+                )}
+              </div>
+
+              {/* Course content stacked bar */}
+              <div className="lg:col-span-3 sc-card-premium glass rounded-2xl p-6">
+                <p className="text-sm font-bold text-[var(--text)] mb-1">Course Content Breakdown</p>
+                <p className="text-xs text-[var(--muted)] mb-5">Materials, quizzes, and assignments per course</p>
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={contentData} barCategoryGap="40%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: "var(--muted)", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "var(--muted)" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)", radius: 8 }} />
+                    <Legend
+                      iconType="circle" iconSize={8}
+                      formatter={(v) => <span style={{ fontSize: 10, color: "var(--muted)", fontWeight: 600 }}>{v}</span>}
+                    />
+                    <Bar dataKey="Materials" stackId="a" radius={[0, 0, 0, 0]} fill="#6366f1" />
+                    <Bar dataKey="Quizzes" stackId="a" fill="#ec4899" />
+                    <Bar dataKey="Assignments" stackId="a" radius={[6, 6, 0, 0]} fill="#f59e0b" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Upcoming Live Classes */}
         {data.upcomingClasses?.length > 0 && (
@@ -194,7 +322,7 @@ function TeacherDashboard() {
               <span className="w-10 h-10 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center text-xl">🎯</span>
               My Courses
             </h2>
-            <p className="text-sm font-medium text-[var(--muted)] mt-1 ml-[52px]">Manage and edit your entire curriculum</p>
+            <p className="text-sm font-medium text-[var(--muted)] mt-1 ml-[52px]">Click any course to manage it</p>
           </div>
           <button
             onClick={openCreate}
@@ -224,66 +352,76 @@ function TeacherDashboard() {
             {data.courses.map((c, i) => (
               <div
                 key={c.id}
-                className="group sc-card-premium glass rounded-2xl p-6 flex flex-col overflow-hidden
-                           animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+                className="group sc-card-premium glass rounded-2xl p-6 flex flex-col overflow-hidden cursor-pointer
+                           animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both] hover-lift"
                 style={{ animationDelay: `${i * 80}ms` }}
+                onClick={() => navigate(`/course/${c.id}`)}
               >
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/0 to-transparent 
-                               opacity-0 group-hover:opacity-100 group-hover:from-[var(--accent)]/5 transition-all duration-500 pointer-events-none" />
+                {/* Accent hover overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/0 to-transparent
+                               opacity-0 group-hover:opacity-100 group-hover:from-[var(--accent)]/5 transition-all duration-500 pointer-events-none rounded-2xl" />
 
                 <div className="relative z-10 flex flex-col h-full">
+                  {/* Top ribbon */}
                   <div className="flex items-start justify-between mb-4 gap-3">
-                    <h3 className="text-xl font-extrabold text-[var(--text)] flex-1 leading-snug group-hover:text-[var(--accent)] transition-colors duration-300">
-                      {c.title}
-                    </h3>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 border border-[var(--accent)]/15 flex items-center justify-center text-lg shrink-0">
+                        📚
+                      </div>
+                      <h3 className="text-base font-extrabold text-[var(--text)] leading-snug group-hover:text-[var(--accent)] transition-colors duration-300 line-clamp-2">
+                        {c.title}
+                      </h3>
+                    </div>
                     {c.subject && (
-                      <span className="px-3 py-1 bg-[var(--accent)]/12 text-[var(--accent)] rounded-lg text-[9px] uppercase font-bold tracking-wider whitespace-nowrap
-                                       border border-[var(--accent)]/15">
+                      <span className="px-2.5 py-1 bg-[var(--accent)]/12 text-[var(--accent)] rounded-lg text-[9px] uppercase font-bold tracking-wider whitespace-nowrap
+                                       border border-[var(--accent)]/15 shrink-0">
                         {c.subject}
                       </span>
                     )}
                   </div>
 
-                  <p className="text-sm font-medium text-[var(--muted)] mb-6 flex-1 line-clamp-3 leading-relaxed">
+                  <p className="text-sm font-medium text-[var(--muted)] mb-5 flex-1 line-clamp-2 leading-relaxed">
                     {c.description || "No description provided."}
                   </p>
 
-                  <div className="grid grid-cols-4 gap-2 mb-6">
+                  {/* Stats mini-grid */}
+                  <div className="grid grid-cols-4 gap-2 mb-5">
                     {[
-                      { label: "Students", val: c.enrollmentCount || 0 },
-                      { label: "Mats", val: c.materialCount || 0 },
-                      { label: "Tasks", val: c.assignmentCount || 0 },
-                      { label: "Live", val: c.liveClassCount || 0 },
+                      { label: "Students", val: c.enrollmentCount || 0, icon: "👨‍🎓" },
+                      { label: "Mats", val: c.materialCount || 0, icon: "📄" },
+                      { label: "Tasks", val: c.assignmentCount || 0, icon: "📝" },
+                      { label: "Live", val: c.liveClassCount || 0, icon: "📹" },
                     ].map((s) => (
-                      <div key={s.label} className="glass border border-[var(--border)]/30 rounded-xl p-2 text-center 
+                      <div key={s.label} className="glass border border-[var(--border)]/20 rounded-xl p-2 text-center
                                     group-hover:border-[var(--accent)]/20 transition-all duration-300">
-                        <div className="text-[9px] font-bold text-[var(--muted)] uppercase tracking-wider mb-0.5">{s.label}</div>
+                        <div className="text-base mb-0.5">{s.icon}</div>
                         <div className="text-sm font-extrabold text-[var(--text)]">{s.val}</div>
+                        <div className="text-[8px] font-bold text-[var(--muted)] uppercase tracking-wider">{s.label}</div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex gap-2">
+                  {/* Action buttons */}
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => navigate(`/course/${c.id}`)}
-                      className="flex-1 py-3 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
+                      className="flex-1 py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
                     >
-                      Manage →
+                      Open Course →
                     </button>
                     <button
-                      onClick={() => openEdit(c)}
-                      className="px-3.5 py-3 glass hover:bg-[var(--accent)]/10 text-[var(--text)] rounded-xl text-sm 
-                                 border border-[var(--border)]/40 cursor-pointer transition-all duration-300 
+                      onClick={(e) => openEdit(e, c)}
+                      className="px-3 py-2.5 glass hover:bg-[var(--accent)]/10 text-[var(--text)] rounded-xl text-sm
+                                 border border-[var(--border)]/40 cursor-pointer transition-all duration-300
                                  hover:border-[var(--accent)]/40 active:scale-95"
                       title="Edit course"
                     >
                       ✏️
                     </button>
                     <button
-                      onClick={() => setConfirmDelete(c)}
-                      className="px-3.5 py-3 bg-red-500/8 hover:bg-red-500/15 text-red-500 rounded-xl text-sm 
-                                 border border-red-500/20 cursor-pointer transition-all duration-300 
+                      onClick={(e) => { e.stopPropagation(); setConfirmDelete(c); }}
+                      className="px-3 py-2.5 bg-red-500/8 hover:bg-red-500/15 text-red-500 rounded-xl text-sm
+                                 border border-red-500/20 cursor-pointer transition-all duration-300
                                  hover:border-red-500/40 active:scale-95"
                       title="Delete course"
                     >
@@ -305,7 +443,7 @@ function TeacherDashboard() {
           className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4"
           onClick={(e) => { if (e.target === e.currentTarget) { setShowModal(false); setError(""); } }}
         >
-          <div className="glass-heavy border border-[var(--border)]/50 rounded-2xl p-8 w-full max-w-lg 
+          <div className="glass-heavy border border-[var(--border)]/50 rounded-2xl p-8 w-full max-w-lg
                           shadow-[0_32px_80px_-16px_rgba(0,0,0,0.4)]
                           animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]">
             <h3 className="text-2xl font-extrabold text-[var(--text)] mb-8 flex items-center gap-3 sc-title">
@@ -353,7 +491,7 @@ function TeacherDashboard() {
                 <button
                   type="button"
                   onClick={() => { setShowModal(false); setError(""); }}
-                  className="px-6 py-3 glass hover:bg-[var(--border)]/30 text-[var(--text)] rounded-xl text-sm font-bold 
+                  className="px-6 py-3 glass hover:bg-[var(--border)]/30 text-[var(--text)] rounded-xl text-sm font-bold
                              border border-[var(--border)]/50 cursor-pointer transition-all duration-300 active:scale-95"
                 >
                   Cancel
@@ -361,7 +499,7 @@ function TeacherDashboard() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-8 py-3 sc-btn-glow disabled:opacity-60 rounded-xl text-sm font-bold 
+                  className="px-8 py-3 sc-btn-glow disabled:opacity-60 rounded-xl text-sm font-bold
                              cursor-pointer transition-all duration-300 active:scale-95"
                 >
                   {loading ? "Saving..." : editCourse ? "Save Changes" : "Create Course"}
@@ -378,7 +516,7 @@ function TeacherDashboard() {
           className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4"
           onClick={(e) => e.target === e.currentTarget && setConfirmDelete(null)}
         >
-          <div className="glass-heavy border border-[var(--border)]/50 rounded-2xl p-8 w-full max-w-sm 
+          <div className="glass-heavy border border-[var(--border)]/50 rounded-2xl p-8 w-full max-w-sm
                           shadow-[0_32px_80px_-16px_rgba(0,0,0,0.4)] text-center
                           animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]">
             <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-5">
@@ -395,7 +533,7 @@ function TeacherDashboard() {
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-3 glass hover:bg-[var(--border)]/30 text-[var(--text)] rounded-xl text-sm font-bold 
+                className="flex-1 py-3 glass hover:bg-[var(--border)]/30 text-[var(--text)] rounded-xl text-sm font-bold
                            border border-[var(--border)]/50 cursor-pointer transition-all duration-300 active:scale-95"
               >
                 Cancel
