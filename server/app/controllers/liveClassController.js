@@ -44,7 +44,7 @@ export async function createLiveClass(req, res) {
           type: liveClass.type,
         });
       });
-    } catch (_) {}
+    } catch { /* non-critical */ }
 
     res.status(201).json(formatLiveClass(liveClass));
   } catch (err) {
@@ -176,7 +176,7 @@ export async function updateLiveClassStatus(req, res) {
         status,
         type: liveClass.type,
       });
-    } catch (_) {}
+    } catch { /* non-critical */ }
 
     res.json(formatLiveClass(liveClass));
   } catch (err) {
@@ -206,7 +206,7 @@ export async function joinLiveClass(req, res) {
           liveClassId: liveClass._id,
           attendeeCount: liveClass.attendees.length,
         });
-      } catch (_) {}
+      } catch { /* non-critical */ }
     }
 
     res.json({
@@ -299,7 +299,7 @@ export async function addComment(req, res) {
           });
         }
       }
-    } catch (_) {}
+    } catch { /* non-critical */ }
 
     res.status(201).json(formatted);
   } catch (err) {
@@ -349,7 +349,7 @@ export async function addQuestion(req, res) {
         liveClassId: req.params.id,
         liveClassTitle: liveClass.title,
       });
-    } catch (_) {}
+    } catch { /* non-critical */ }
 
     res.status(201).json(formatQuestion(classQuestion));
   } catch (err) {
@@ -386,7 +386,7 @@ export async function markAnswered(req, res) {
         questionId: qId,
         liveClassTitle: liveClass.title,
       });
-    } catch (_) {}
+    } catch { /* non-critical */ }
 
     res.json(formatQuestion(classQuestion));
   } catch (err) {
@@ -434,7 +434,7 @@ export async function uploadRecording(req, res) {
           });
         });
       }
-    } catch (_) {}
+    } catch { /* non-critical */ }
 
     res.json({ message: 'Recording uploaded.', recordingUrl });
   } catch (err) {

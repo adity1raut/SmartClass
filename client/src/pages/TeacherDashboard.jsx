@@ -160,7 +160,7 @@ function TeacherDashboard() {
   const [assignBuilding, setAssignBuilding] = useState(false);
   const [assignAiLoading, setAssignAiLoading] = useState(false);
   // Class agenda AI
-  const [agendaForm, setAgendaForm] = useState({ topic: "", duration_minutes: 60 });
+  const [agendaForm, setAgendaForm] = useState({ topic: "", duration_minutes: 60, course_title: "" });
 
   const openAiModal = (type, course = null) => {
     setAiModal(type);
@@ -1352,6 +1352,7 @@ function TeacherDashboard() {
                 {aiModal === "quiz" && "Generate & Save Quiz with AI"}
                 {aiModal === "outline" && "AI Course Outline Generator"}
                 {aiModal === "agent" && "AI Agent — Multi-step Tasks"}
+                {aiModal === "class-agenda" && "AI Live Class Agenda Generator"}
               </h3>
               <button onClick={closeAiModal} className="w-8 h-8 rounded-lg glass border border-[var(--border)]/40 flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer">✕</button>
             </div>
@@ -1596,6 +1597,56 @@ function TeacherDashboard() {
                           <button onClick={() => { setAiResult(null); setAgentTask(""); }} className="text-xs text-[var(--muted)] hover:text-[var(--text)]">← New Task</button>
                         </div>
                         <div className="p-4 max-h-[50vh] overflow-y-auto">
+                          <AiMarkdown text={aiResult.response || JSON.stringify(aiResult, null, 2)} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ══ CLASS AGENDA ══ */}
+              {aiModal === "class-agenda" && (
+                <>
+                  {!aiResult && (
+                    <form onSubmit={(e) => { e.preventDefault(); runAi("/generate-class-agenda", { course_title: aiCourse?.title || agendaForm.course_title || "", topic: agendaForm.topic, duration_minutes: Number(agendaForm.duration_minutes) }); }} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        {!aiCourse && (
+                          <div className="col-span-2">
+                            <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Course Title *</label>
+                            <input className={inputCls} required value={agendaForm.course_title || ""} onChange={(e) => setAgendaForm((f) => ({ ...f, course_title: e.target.value }))} placeholder="e.g. Introduction to Python" />
+                          </div>
+                        )}
+                        <div className="col-span-2">
+                          <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Class Topic *</label>
+                          <input className={inputCls} required value={agendaForm.topic} onChange={(e) => setAgendaForm((f) => ({ ...f, topic: e.target.value }))} placeholder="e.g. Recursion, Sorting Algorithms…" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Duration (minutes)</label>
+                          <input type="number" min={15} max={240} className={inputCls} value={agendaForm.duration_minutes} onChange={(e) => setAgendaForm((f) => ({ ...f, duration_minutes: e.target.value }))} />
+                        </div>
+                        {aiCourse && (
+                          <div className="flex items-end pb-0.5">
+                            <div className={`${inputCls} opacity-60`}>📚 {aiCourse.title}</div>
+                          </div>
+                        )}
+                      </div>
+                      <button type="submit" disabled={aiLoading} className="w-full py-3 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
+                        {aiLoading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Generating Agenda…</> : "Generate Class Agenda →"}
+                      </button>
+                    </form>
+                  )}
+                  {aiResult && (
+                    <div ref={aiResultRef} className="space-y-3">
+                      <div className="border border-[var(--border)]/40 rounded-xl overflow-hidden">
+                        <div className="px-4 py-2 border-b border-[var(--border)]/30 bg-indigo-500/5 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                            <span className="text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">Class Agenda — {agendaForm.duration_minutes} min</span>
+                          </div>
+                          <button onClick={() => setAiResult(null)} className="text-xs text-[var(--muted)] hover:text-[var(--text)]">← Regenerate</button>
+                        </div>
+                        <div className="p-4 max-h-[55vh] overflow-y-auto">
                           <AiMarkdown text={aiResult.response || JSON.stringify(aiResult, null, 2)} />
                         </div>
                       </div>

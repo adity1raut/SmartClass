@@ -39,7 +39,7 @@ export async function createCourse(req, res) {
             read: false,
           });
         });
-      } catch (_) {
+      } catch {
         // socket not critical — continue
       }
 

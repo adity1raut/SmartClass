@@ -7,7 +7,7 @@ import { createTestUser, loginUser, createTestCourse, enrollStudent } from './he
 const { app } = buildApp();
 const request = supertest(app);
 
-let teacher, student, teacherCookie, studentCookie, courseId, assignmentId;
+let teacher, student, teacherCookie, studentCookie, courseId;
 
 beforeAll(async () => {
   teacher = await createTestUser({ name: 'T Assign', email: 'ta@test.io', role: 'teacher' });
@@ -43,7 +43,6 @@ describe('Assignments API', () => {
 
       expect(res.status).toBe(201);
       expect(res.body).toMatchObject({ title: 'Homework 1', maxScore: 100 });
-      assignmentId = res.body.id;
     });
 
     it('returns 400 when title is missing', async () => {

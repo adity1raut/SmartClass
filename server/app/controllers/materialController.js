@@ -1,6 +1,5 @@
 import Material from '../models/Material.js';
 import Course from '../models/Course.js';
-import User from '../models/User.js';
 import CompletedMaterial from '../models/CompletedMaterial.js';
 import Enrollment from '../models/Enrollment.js';
 
@@ -191,7 +190,7 @@ async function syncProgress(studentId, courseId) {
     if (progress === 100) { update.status = 'completed'; update.completedAt = new Date(); }
     else { update.status = 'active'; update.completedAt = null; }
     await Enrollment.findOneAndUpdate({ student: studentId, course: courseId }, update);
-  } catch (_) {
+  } catch {
     // non-critical — don't fail the request
   }
 }

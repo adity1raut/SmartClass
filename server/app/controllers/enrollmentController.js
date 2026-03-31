@@ -42,7 +42,7 @@ export async function enroll(req, res) {
         courseId,
         studentId,
       });
-    } catch (_) {}
+    } catch { /* non-critical */ }
 
     res.status(201).json(formatEnrollment(enrollment, course));
   } catch (err) {

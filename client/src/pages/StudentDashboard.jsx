@@ -67,6 +67,24 @@ function StudentDashboard() {
   const chatBottomRef = useRef(null);
   const aiResultRef = useRef(null);
 
+  // Quiz state
+  const [activeQuizzes, setActiveQuizzes] = useState([]);
+  const [quizzesLoading, setQuizzesLoading] = useState(false);
+  const [quizModal, setQuizModal] = useState(null);   // the quiz object being taken
+  const [quizAnswers, setQuizAnswers] = useState({});  // { questionIndex: selectedOption }
+  const [quizSubmitting, setQuizSubmitting] = useState(false);
+  const [quizResult, setQuizResult] = useState(null);
+
+  // Assignment state
+  const [myAssignments, setMyAssignments] = useState([]);
+  const [assignmentsLoading, setAssignmentsLoading] = useState(false);
+  const [submitModal, setSubmitModal] = useState(null);  // assignment object
+  const [submitContent, setSubmitContent] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [mySubmission, setMySubmission] = useState(null);
+  const [aiFeedback, setAiFeedback] = useState(null);
+  const [aiFeedbackLoading, setAiFeedbackLoading] = useState(false);
+
   // DB-integrated state
   const [planSaving, setPlanSaving] = useState(false);
   const [planSaved, setPlanSaved] = useState(false);
@@ -180,6 +198,103 @@ function StudentDashboard() {
     }
   };
 
+  // ── Quiz functions ──────────────────────────────────────────────────────────
+  const loadActiveQuizzes = async (enrolledCourses) => {
+    if (!enrolledCourses?.length) return;
+    setQuizzesLoading(true);
+    try {
+      const results = await Promise.all(
+        enrolledCourses.map((c) =>
+          fetch(`/api/courses/${c.id}/quizzes`, { credentials: "include" })
+            .then((r) => r.json())
+            .then((qs) => (Array.isArray(qs) ? qs.filter((q) => q.isActive).map((q) => ({ ...q, courseTitle: c.title })) : []))
+            .catch(() => [])
+        )
+      );
+      setActiveQuizzes(results.flat());
+    } finally { setQuizzesLoading(false); }
+  };
+
+  const startQuiz = async (quiz) => {
+    setQuizModal(quiz);
+    setQuizAnswers({});
+    setQuizResult(null);
+    // check if already taken
+    try {
+      const res = await fetch(`/api/quizzes/${quiz.id}/my-result?studentId=${user.id}`, { credentials: "include" });
+      if (res.ok) { const d = await res.json(); setQuizResult(d); }
+    } catch {/* not taken yet */}
+  };
+
+  const submitQuizAnswers = async () => {
+    if (!quizModal) return;
+    setQuizSubmitting(true);
+    try {
+      const answers = quizModal.questions.map((_, i) => ({ questionIndex: i, selectedOption: quizAnswers[i] ?? -1 }));
+      const res = await fetch(`/api/quizzes/${quizModal.id}/submit`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+        body: JSON.stringify({ studentId: user.id, answers }),
+      });
+      const d = await res.json();
+      if (res.ok) setQuizResult(d);
+    } catch {/* silent */} finally { setQuizSubmitting(false); }
+  };
+
+  // ── Assignment functions ────────────────────────────────────────────────────
+  const loadAssignments = async (enrolledCourses) => {
+    if (!enrolledCourses?.length) return;
+    setAssignmentsLoading(true);
+    try {
+      const results = await Promise.all(
+        enrolledCourses.map((c) =>
+          fetch(`/api/courses/${c.id}/assignments`, { credentials: "include" })
+            .then((r) => r.json())
+            .then((as) => (Array.isArray(as) ? as.map((a) => ({ ...a, courseTitle: c.title })) : []))
+            .catch(() => [])
+        )
+      );
+      setMyAssignments(results.flat());
+    } finally { setAssignmentsLoading(false); }
+  };
+
+  const openSubmitModal = async (assignment) => {
+    setSubmitModal(assignment);
+    setSubmitContent("");
+    setMySubmission(null);
+    setAiFeedback(null);
+    try {
+      const res = await fetch(`/api/assignments/${assignment.id}/my-submission?studentId=${user.id}`, { credentials: "include" });
+      if (res.ok) { const d = await res.json(); setMySubmission(d); setSubmitContent(d.content || ""); }
+    } catch {/* not submitted yet */}
+  };
+
+  const submitAssignmentWork = async () => {
+    if (!submitModal || !submitContent.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/assignments/${submitModal.id}/submit`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+        body: JSON.stringify({ studentId: user.id, content: submitContent }),
+      });
+      const d = await res.json();
+      if (res.ok) setMySubmission(d);
+    } catch {/* silent */} finally { setSubmitting(false); }
+  };
+
+  const getAIFeedback = async () => {
+    if (!mySubmission?.id) return;
+    setAiFeedbackLoading(true);
+    setAiFeedback(null);
+    try {
+      const res = await fetch(`/api/ai/submissions/${mySubmission.id}/feedback`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
+        body: JSON.stringify({}),
+      });
+      const d = await res.json();
+      if (res.ok) setAiFeedback(d.feedback || d.response || JSON.stringify(d));
+    } catch {/* silent */} finally { setAiFeedbackLoading(false); }
+  };
+
   const sendChat = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -212,6 +327,10 @@ function StudentDashboard() {
       const dashDataRes = await dashResponse.json();
       if (!dashDataRes.error) {
         setDashData(dashDataRes);
+        // Load quizzes & assignments for enrolled courses
+        const enrolled = dashDataRes.enrolledCourses || [];
+        loadActiveQuizzes(enrolled);
+        loadAssignments(enrolled);
       }
 
       const coursesResponse = await fetch("/api/courses");
@@ -409,6 +528,95 @@ function StudentDashboard() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* ── Active Quizzes ── */}
+        <div className="mb-12 animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]" style={{ animationDelay: "140ms" }}>
+          <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
+            <span className="w-10 h-10 rounded-xl bg-pink-500/15 flex items-center justify-center text-xl">🧠</span>
+            Active Quizzes
+          </h2>
+          {quizzesLoading ? (
+            <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
+              <span className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />Loading quizzes…
+            </div>
+          ) : activeQuizzes.length === 0 ? (
+            <div className="sc-card-premium glass rounded-2xl p-8 text-center">
+              <div className="text-4xl mb-3">🎯</div>
+              <p className="text-sm font-semibold text-[var(--muted)]">No active quizzes right now. Check back later!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeQuizzes.map((q) => (
+                <div key={q.id} className="sc-card-premium glass rounded-2xl p-5 flex flex-col gap-3 border border-[var(--border)]/30 hover:border-[var(--accent)]/30 transition-all hover-lift">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-extrabold text-[var(--text)] truncate">{q.title}</p>
+                      <p className="text-xs text-[var(--muted)] mt-0.5">📚 {q.courseTitle}</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-pink-500/15 text-pink-400 text-[10px] font-bold border border-pink-500/20 shrink-0">
+                      {q.questionCount ?? q.questions?.length ?? 0}Q
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-[var(--muted)]">
+                    <span>{q.timeLimit ? `⏱ ${q.timeLimit} min` : "No time limit"}</span>
+                    {q.dueDate && <span>Due: {new Date(q.dueDate).toLocaleDateString()}</span>}
+                  </div>
+                  <button onClick={() => startQuiz(q)} className="w-full py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95">
+                    Take Quiz →
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── My Assignments ── */}
+        <div className="mb-12 animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]" style={{ animationDelay: "160ms" }}>
+          <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
+            <span className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-xl">📝</span>
+            My Assignments
+          </h2>
+          {assignmentsLoading ? (
+            <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
+              <span className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />Loading assignments…
+            </div>
+          ) : myAssignments.length === 0 ? (
+            <div className="sc-card-premium glass rounded-2xl p-8 text-center">
+              <div className="text-4xl mb-3">📋</div>
+              <p className="text-sm font-semibold text-[var(--muted)]">No assignments yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {myAssignments.map((a) => {
+                const isOverdue = a.dueDate && new Date(a.dueDate) < new Date();
+                return (
+                  <div key={a.id} className="sc-card-premium glass rounded-2xl p-5 flex flex-col gap-3 border border-[var(--border)]/30 hover:border-[var(--accent)]/30 transition-all hover-lift">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-extrabold text-[var(--text)] truncate">{a.title}</p>
+                        <p className="text-xs text-[var(--muted)] mt-0.5">📚 {a.courseTitle}</p>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-400 text-[10px] font-bold border border-amber-500/20 shrink-0">
+                        {a.maxScore}pts
+                      </span>
+                    </div>
+                    {a.description && <p className="text-xs text-[var(--muted)] line-clamp-2 leading-relaxed">{a.description}</p>}
+                    <div className="flex items-center justify-between text-xs">
+                      {a.dueDate ? (
+                        <span className={isOverdue ? "text-red-400 font-semibold" : "text-[var(--muted)]"}>
+                          {isOverdue ? "⚠ Overdue" : "Due"}: {new Date(a.dueDate).toLocaleDateString()}
+                        </span>
+                      ) : <span className="text-[var(--muted)]">No due date</span>}
+                    </div>
+                    <button onClick={() => openSubmitModal(a)} className="w-full py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95">
+                      Submit / View →
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Charts Section */}
@@ -874,6 +1082,166 @@ function StudentDashboard() {
       >
         💬
       </button>
+
+      {/* ── Quiz Taking Modal ── */}
+      {quizModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget && !quizResult) return; if (e.target === e.currentTarget && quizResult) setQuizModal(null); }}>
+          <div className="glass-heavy border border-[var(--border)]/50 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-[0_32px_80px_-16px_rgba(0,0,0,0.5)] animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]">
+            <div className="flex items-center justify-between p-5 border-b border-[var(--border)]/30 shrink-0">
+              <h3 className="text-lg font-extrabold text-[var(--text)] flex items-center gap-3">
+                <span className="w-9 h-9 rounded-xl bg-pink-500/15 flex items-center justify-center text-lg">🧠</span>
+                {quizModal.title}
+              </h3>
+              <button onClick={() => setQuizModal(null)} className="w-8 h-8 rounded-lg glass border border-[var(--border)]/40 flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer">✕</button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 p-5">
+              {quizResult ? (
+                /* Result screen */
+                <div className="text-center py-8 space-y-5">
+                  <div className={`text-6xl ${quizResult.percentage >= 70 ? "animate-bounce" : ""}`}>
+                    {quizResult.percentage >= 80 ? "🎉" : quizResult.percentage >= 50 ? "👍" : "📖"}
+                  </div>
+                  <div>
+                    <p className="text-3xl font-extrabold text-[var(--text)]">{quizResult.percentage}%</p>
+                    <p className="text-sm text-[var(--muted)] mt-1">{quizResult.score} / {quizResult.totalPoints} points</p>
+                  </div>
+                  <div className="w-full h-3 bg-[var(--border)]/20 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-1000 ${quizResult.percentage >= 70 ? "bg-green-500" : quizResult.percentage >= 40 ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${quizResult.percentage}%` }} />
+                  </div>
+                  {/* Question review */}
+                  <div className="text-left space-y-3 mt-4">
+                    {quizModal.questions.map((q, i) => {
+                      const userAns = quizResult.answers?.find((a) => a.questionIndex === i);
+                      const correct = q.correctOption;
+                      const chosen = userAns?.selectedOption;
+                      return (
+                        <div key={i} className={`p-3 rounded-xl border text-sm ${chosen === correct ? "border-green-500/30 bg-green-500/5" : "border-red-400/30 bg-red-500/5"}`}>
+                          <p className="font-semibold text-[var(--text)] mb-2"><span className="text-[var(--accent)] mr-1">Q{i+1}.</span>{q.question}</p>
+                          {q.options.map((opt, j) => (
+                            <p key={j} className={`text-xs px-2.5 py-1 rounded-lg mb-1 ${j === correct ? "bg-green-500/15 text-green-400 font-semibold" : j === chosen && j !== correct ? "bg-red-500/15 text-red-400 line-through" : "text-[var(--muted)]"}`}>
+                              {String.fromCharCode(65+j)}. {opt}
+                            </p>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button onClick={() => setQuizModal(null)} className="px-6 py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95">Done</button>
+                </div>
+              ) : (
+                /* Question taking screen */
+                <div className="space-y-5">
+                  <p className="text-xs text-[var(--muted)] font-semibold">{quizModal.questions?.length ?? 0} questions · {Object.keys(quizAnswers).length} answered</p>
+                  {quizModal.questions?.map((q, qi) => (
+                    <div key={qi} className="border border-[var(--border)]/40 rounded-xl p-4 space-y-3 glass">
+                      <p className="font-semibold text-sm text-[var(--text)]"><span className="text-[var(--accent)] mr-1.5">Q{qi+1}.</span>{q.question}</p>
+                      <div className="space-y-2">
+                        {q.options.map((opt, oi) => (
+                          <button
+                            key={oi}
+                            onClick={() => setQuizAnswers((prev) => ({ ...prev, [qi]: oi }))}
+                            className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm transition-all cursor-pointer border ${quizAnswers[qi] === oi ? "bg-[var(--accent)]/15 border-[var(--accent)]/50 text-[var(--accent)] font-semibold" : "border-[var(--border)]/30 text-[var(--text)] hover:border-[var(--accent)]/30 hover:bg-[var(--accent)]/5"}`}
+                          >
+                            <span className="font-bold mr-2">{String.fromCharCode(65+oi)}.</span>{opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    onClick={submitQuizAnswers}
+                    disabled={quizSubmitting || Object.keys(quizAnswers).length < (quizModal.questions?.length ?? 0)}
+                    className="w-full py-3 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {quizSubmitting ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Submitting…</> : `Submit Quiz (${Object.keys(quizAnswers).length}/${quizModal.questions?.length ?? 0} answered)`}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Assignment Submission Modal ── */}
+      {submitModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={(e) => e.target === e.currentTarget && setSubmitModal(null)}>
+          <div className="glass-heavy border border-[var(--border)]/50 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-[0_32px_80px_-16px_rgba(0,0,0,0.5)] animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]">
+            <div className="flex items-center justify-between p-5 border-b border-[var(--border)]/30 shrink-0">
+              <h3 className="text-lg font-extrabold text-[var(--text)] flex items-center gap-3">
+                <span className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center text-lg">📝</span>
+                {submitModal.title}
+              </h3>
+              <button onClick={() => setSubmitModal(null)} className="w-8 h-8 rounded-lg glass border border-[var(--border)]/40 flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer">✕</button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 p-5 space-y-4">
+              {/* Assignment details */}
+              {submitModal.description && (
+                <div className="p-4 rounded-xl border border-[var(--border)]/30 glass">
+                  <p className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Assignment Details</p>
+                  <SdAiMarkdown text={submitModal.description} />
+                </div>
+              )}
+              <div className="flex items-center gap-4 text-xs text-[var(--muted)] font-semibold">
+                <span>Max Score: <strong className="text-[var(--text)]">{submitModal.maxScore}</strong></span>
+                {submitModal.dueDate && <span>Due: <strong className="text-[var(--text)]">{new Date(submitModal.dueDate).toLocaleString()}</strong></span>}
+                <span>Course: <strong className="text-[var(--text)]">{submitModal.courseTitle}</strong></span>
+              </div>
+
+              {/* Submission status */}
+              {mySubmission && (
+                <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border ${mySubmission.status === "graded" ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-amber-500/10 border-amber-500/20 text-amber-400"}`}>
+                  {mySubmission.status === "graded" ? `✓ Graded: ${mySubmission.score}/${submitModal.maxScore} pts` : "⏳ Submitted — awaiting review"}
+                  {mySubmission.feedback && <span className="text-[var(--muted)] ml-2">· Has feedback</span>}
+                </div>
+              )}
+
+              {/* Text submission */}
+              <div>
+                <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">Your Submission</label>
+                <textarea
+                  className="w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 transition-all glass text-[var(--text)] placeholder:text-[var(--muted)]/50 resize-none"
+                  rows={6}
+                  placeholder="Write your answer, solution, or paste your work here…"
+                  value={submitContent}
+                  onChange={(e) => setSubmitContent(e.target.value)}
+                />
+              </div>
+              <button onClick={submitAssignmentWork} disabled={submitting || !submitContent.trim()} className="w-full py-3 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
+                {submitting ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Submitting…</> : mySubmission ? "Update Submission →" : "Submit →"}
+              </button>
+
+              {/* AI Feedback section */}
+              {mySubmission && (
+                <div className="border-t border-[var(--border)]/30 pt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold text-[var(--text)] flex items-center gap-2">🤖 AI Feedback</p>
+                    <button onClick={getAIFeedback} disabled={aiFeedbackLoading} className="px-4 py-2 rounded-xl border border-violet-500/30 text-violet-400 text-xs font-bold hover:bg-violet-500/10 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2">
+                      {aiFeedbackLoading ? <><span className="w-3 h-3 border border-current/30 border-t-current rounded-full animate-spin" />Analyzing…</> : "Get AI Feedback"}
+                    </button>
+                  </div>
+                  {mySubmission.feedback && !aiFeedback && (
+                    <div className="border border-[var(--border)]/40 rounded-xl overflow-hidden">
+                      <div className="px-4 py-2 border-b border-[var(--border)]/30 bg-violet-500/5 text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">Saved Feedback</div>
+                      <div className="p-4"><SdAiMarkdown text={mySubmission.feedback} /></div>
+                    </div>
+                  )}
+                  {aiFeedback && (
+                    <div className="border border-violet-500/30 rounded-xl overflow-hidden">
+                      <div className="px-4 py-2 border-b border-violet-500/20 bg-violet-500/5 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                        <span className="text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">AI Analysis</span>
+                      </div>
+                      <div className="p-4"><SdAiMarkdown text={aiFeedback} /></div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── AI Modal ── */}
       {aiModal && (

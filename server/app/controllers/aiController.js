@@ -313,7 +313,7 @@ export async function getStudyPlans(req, res) {
   try {
     const plans = await AIStudyPlan.find({ student: req.params.studentId }).sort({ createdAt: -1 });
     res.json(plans.map(formatPlan));
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch study plans.' });
   }
 }
@@ -327,7 +327,7 @@ export async function deleteStudyPlan(req, res) {
       return res.status(403).json({ error: 'Not authorized.' });
     await plan.deleteOne();
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to delete study plan.' });
   }
 }
@@ -388,7 +388,7 @@ export async function saveOutline(req, res) {
       content,
     });
     res.status(201).json(formatOutline(outline));
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to save outline.' });
   }
 }
@@ -400,7 +400,7 @@ export async function getOutlines(req, res) {
       .populate('course', 'title')
       .sort({ createdAt: -1 });
     res.json(outlines.map(formatOutline));
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch outlines.' });
   }
 }
@@ -414,7 +414,7 @@ export async function deleteOutline(req, res) {
       return res.status(403).json({ error: 'Not authorized.' });
     await outline.deleteOne();
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to delete outline.' });
   }
 }
