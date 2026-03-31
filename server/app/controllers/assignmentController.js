@@ -1,6 +1,6 @@
-import Assignment from '../models/Assignment.js';
-import Submission from '../models/Submission.js';
-import Course from '../models/Course.js';
+import Assignment from "../models/Assignment.js";
+import Submission from "../models/Submission.js";
+import Course from "../models/Course.js";
 
 // ─── POST /api/courses/:courseId/assignments ──────────────────────────────────
 export async function createAssignment(req, res) {
@@ -9,13 +9,13 @@ export async function createAssignment(req, res) {
     const { title, description, dueDate, maxScore, teacherId } = req.body;
 
     if (!title || !teacherId)
-      return res.status(400).json({ error: 'title and teacherId are required.' });
+      return res.status(400).json({ error: "title and teacherId are required." });
 
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
     if (course.teacher.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the course teacher can create assignments.' });
+      return res.status(403).json({ error: "Only the course teacher can create assignments." });
 
     const assignment = await Assignment.create({
       title,
@@ -28,8 +28,8 @@ export async function createAssignment(req, res) {
 
     res.status(201).json(formatAssignment(assignment));
   } catch (err) {
-    console.error('createAssignment error:', err);
-    res.status(500).json({ error: 'Failed to create assignment.' });
+    console.error("createAssignment error:", err);
+    res.status(500).json({ error: "Failed to create assignment." });
   }
 }
 
@@ -39,25 +39,25 @@ export async function getCourseAssignments(req, res) {
     const { courseId } = req.params;
 
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
     const assignments = await Assignment.find({ course: courseId }).sort({ createdAt: -1 });
     res.json(assignments.map(formatAssignment));
   } catch (err) {
-    console.error('getCourseAssignments error:', err);
-    res.status(500).json({ error: 'Failed to fetch assignments.' });
+    console.error("getCourseAssignments error:", err);
+    res.status(500).json({ error: "Failed to fetch assignments." });
   }
 }
 
 // ─── GET /api/assignments/:id ─────────────────────────────────────────────────
 export async function getAssignment(req, res) {
   try {
-    const assignment = await Assignment.findById(req.params.id).populate('createdBy', 'name');
-    if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
+    const assignment = await Assignment.findById(req.params.id).populate("createdBy", "name");
+    if (!assignment) return res.status(404).json({ error: "Assignment not found." });
     res.json(formatAssignment(assignment));
   } catch (err) {
-    console.error('getAssignment error:', err);
-    res.status(500).json({ error: 'Failed to fetch assignment.' });
+    console.error("getAssignment error:", err);
+    res.status(500).json({ error: "Failed to fetch assignment." });
   }
 }
 
@@ -67,10 +67,10 @@ export async function updateAssignment(req, res) {
     const { title, description, dueDate, maxScore, teacherId } = req.body;
 
     const assignment = await Assignment.findById(req.params.id);
-    if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
+    if (!assignment) return res.status(404).json({ error: "Assignment not found." });
 
     if (assignment.createdBy.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the assignment creator can update it.' });
+      return res.status(403).json({ error: "Only the assignment creator can update it." });
 
     if (title !== undefined) assignment.title = title;
     if (description !== undefined) assignment.description = description;
@@ -80,8 +80,8 @@ export async function updateAssignment(req, res) {
 
     res.json(formatAssignment(assignment));
   } catch (err) {
-    console.error('updateAssignment error:', err);
-    res.status(500).json({ error: 'Failed to update assignment.' });
+    console.error("updateAssignment error:", err);
+    res.status(500).json({ error: "Failed to update assignment." });
   }
 }
 
@@ -91,19 +91,19 @@ export async function deleteAssignment(req, res) {
     const { teacherId } = req.body;
 
     const assignment = await Assignment.findById(req.params.id);
-    if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
+    if (!assignment) return res.status(404).json({ error: "Assignment not found." });
 
     if (assignment.createdBy.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the assignment creator can delete it.' });
+      return res.status(403).json({ error: "Only the assignment creator can delete it." });
 
     await Assignment.findByIdAndDelete(req.params.id);
     // Remove all submissions for this assignment
     await Submission.deleteMany({ assignment: req.params.id });
 
-    res.json({ message: 'Assignment deleted.' });
+    res.json({ message: "Assignment deleted." });
   } catch (err) {
-    console.error('deleteAssignment error:', err);
-    res.status(500).json({ error: 'Failed to delete assignment.' });
+    console.error("deleteAssignment error:", err);
+    res.status(500).json({ error: "Failed to delete assignment." });
   }
 }
 
@@ -113,17 +113,15 @@ export async function submitAssignment(req, res) {
     const { id } = req.params;
     const { studentId, content, fileUrl } = req.body;
 
-    if (!studentId)
-      return res.status(400).json({ error: 'studentId is required.' });
+    if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const assignment = await Assignment.findById(id);
-    if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
+    if (!assignment) return res.status(404).json({ error: "Assignment not found." });
 
     // Check if student is enrolled in the course
     const course = await Course.findById(assignment.course);
     const isEnrolled = course.enrolledStudents.some((s) => s.toString() === studentId);
-    if (!isEnrolled)
-      return res.status(403).json({ error: 'You are not enrolled in this course.' });
+    if (!isEnrolled) return res.status(403).json({ error: "You are not enrolled in this course." });
 
     const now = new Date();
     const isLate = assignment.dueDate && now > assignment.dueDate;
@@ -132,20 +130,20 @@ export async function submitAssignment(req, res) {
     const submission = await Submission.findOneAndUpdate(
       { assignment: id, student: studentId },
       {
-        content: content || '',
-        fileUrl: fileUrl || '',
-        status: isLate ? 'late' : 'submitted',
+        content: content || "",
+        fileUrl: fileUrl || "",
+        status: isLate ? "late" : "submitted",
         submittedAt: now,
         score: null,
-        feedback: '',
+        feedback: "",
       },
       { upsert: true, new: true }
     );
 
     res.status(201).json(formatSubmission(submission));
   } catch (err) {
-    console.error('submitAssignment error:', err);
-    res.status(500).json({ error: 'Failed to submit assignment.' });
+    console.error("submitAssignment error:", err);
+    res.status(500).json({ error: "Failed to submit assignment." });
   }
 }
 
@@ -157,19 +155,19 @@ export async function getSubmissions(req, res) {
     const { teacherId } = req.query;
 
     const assignment = await Assignment.findById(id);
-    if (!assignment) return res.status(404).json({ error: 'Assignment not found.' });
+    if (!assignment) return res.status(404).json({ error: "Assignment not found." });
 
     if (assignment.createdBy.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the assignment creator can view submissions.' });
+      return res.status(403).json({ error: "Only the assignment creator can view submissions." });
 
     const submissions = await Submission.find({ assignment: id })
-      .populate('student', 'name email')
+      .populate("student", "name email")
       .sort({ submittedAt: -1 });
 
     res.json(submissions.map(formatSubmission));
   } catch (err) {
-    console.error('getSubmissions error:', err);
-    res.status(500).json({ error: 'Failed to fetch submissions.' });
+    console.error("getSubmissions error:", err);
+    res.status(500).json({ error: "Failed to fetch submissions." });
   }
 }
 
@@ -180,15 +178,15 @@ export async function getMySubmission(req, res) {
     const { id } = req.params;
     const { studentId } = req.query;
 
-    if (!studentId) return res.status(400).json({ error: 'studentId is required.' });
+    if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const submission = await Submission.findOne({ assignment: id, student: studentId });
-    if (!submission) return res.status(404).json({ error: 'No submission found.' });
+    if (!submission) return res.status(404).json({ error: "No submission found." });
 
     res.json(formatSubmission(submission));
   } catch (err) {
-    console.error('getMySubmission error:', err);
-    res.status(500).json({ error: 'Failed to fetch submission.' });
+    console.error("getMySubmission error:", err);
+    res.status(500).json({ error: "Failed to fetch submission." });
   }
 }
 
@@ -198,21 +196,21 @@ export async function gradeSubmission(req, res) {
     const { submissionId } = req.params;
     const { score, feedback, teacherId } = req.body;
 
-    const submission = await Submission.findById(submissionId).populate('assignment');
-    if (!submission) return res.status(404).json({ error: 'Submission not found.' });
+    const submission = await Submission.findById(submissionId).populate("assignment");
+    if (!submission) return res.status(404).json({ error: "Submission not found." });
 
     if (submission.assignment.createdBy.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the assignment teacher can grade submissions.' });
+      return res.status(403).json({ error: "Only the assignment teacher can grade submissions." });
 
     if (score !== undefined) submission.score = score;
     if (feedback !== undefined) submission.feedback = feedback;
-    submission.status = 'graded';
+    submission.status = "graded";
     await submission.save();
 
     res.json(formatSubmission(submission));
   } catch (err) {
-    console.error('gradeSubmission error:', err);
-    res.status(500).json({ error: 'Failed to grade submission.' });
+    console.error("gradeSubmission error:", err);
+    res.status(500).json({ error: "Failed to grade submission." });
   }
 }
 
@@ -225,9 +223,7 @@ function formatAssignment(a) {
     dueDate: a.dueDate,
     maxScore: a.maxScore,
     course: a.course,
-    createdBy: a.createdBy
-      ? { id: a.createdBy._id || a.createdBy, name: a.createdBy.name }
-      : null,
+    createdBy: a.createdBy ? { id: a.createdBy._id || a.createdBy, name: a.createdBy.name } : null,
     createdAt: a.createdAt,
   };
 }

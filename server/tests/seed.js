@@ -10,43 +10,41 @@
  *   Student  →  teststudent@smartclass.io / Student123!
  */
 
-import 'dotenv/config';
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import "dotenv/config";
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const MONGO_URI =
-  process.env.MONGO_URI ||
-  process.env.MONGODB_URI ||
-  'mongodb://localhost:27017/smartclass_dev';
+  process.env.MONGO_URI || process.env.MONGODB_URI || "mongodb://localhost:27017/smartclass_dev";
 
 // Minimal inline schema so this script has no import-path dependency on app/
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
-  role: { type: String, enum: ['student', 'teacher'] },
+  role: { type: String, enum: ["student", "teacher"] },
   isVerified: { type: Boolean, default: false },
 });
 
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 const SEEDS = [
   {
-    name: 'Test Teacher',
-    email: 'testteacher@smartclass.io',
-    password: 'Teacher123!',
-    role: 'teacher',
+    name: "Test Teacher",
+    email: "testteacher@smartclass.io",
+    password: "Teacher123!",
+    role: "teacher",
   },
   {
-    name: 'Test Student',
-    email: 'teststudent@smartclass.io',
-    password: 'Student123!',
-    role: 'student',
+    name: "Test Student",
+    email: "teststudent@smartclass.io",
+    password: "Student123!",
+    role: "student",
   },
 ];
 
 async function seed() {
-  console.log(`Connecting to ${MONGO_URI.replace(/\/\/.*@/, '//<credentials>@')} …`);
+  console.log(`Connecting to ${MONGO_URI.replace(/\/\/.*@/, "//<credentials>@")} …`);
   await mongoose.connect(MONGO_URI);
 
   for (const u of SEEDS) {
@@ -60,10 +58,10 @@ async function seed() {
   }
 
   await mongoose.disconnect();
-  console.log('Seed complete.');
+  console.log("Seed complete.");
 }
 
 seed().catch((err) => {
-  console.error('Seed failed:', err.message);
+  console.error("Seed failed:", err.message);
   process.exit(1);
 });

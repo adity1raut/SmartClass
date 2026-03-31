@@ -1,10 +1,10 @@
-import Course from '../models/Course.js';
-import Material from '../models/Material.js';
-import Assignment from '../models/Assignment.js';
-import Submission from '../models/Submission.js';
-import Quiz from '../models/Quiz.js';
-import QuizResult from '../models/QuizResult.js';
-import LiveClass from '../models/LiveClass.js';
+import Course from "../models/Course.js";
+import Material from "../models/Material.js";
+import Assignment from "../models/Assignment.js";
+import Submission from "../models/Submission.js";
+import Quiz from "../models/Quiz.js";
+import QuizResult from "../models/QuizResult.js";
+import LiveClass from "../models/LiveClass.js";
 
 // ─── GET /api/teachers/:id/dashboard ────────────────────────────────────────
 export async function getTeacherDashboard(req, res) {
@@ -18,25 +18,25 @@ export async function getTeacherDashboard(req, res) {
       await Promise.all([
         Material.aggregate([
           { $match: { course: { $in: courseIds } } },
-          { $group: { _id: '$course', count: { $sum: 1 } } },
+          { $group: { _id: "$course", count: { $sum: 1 } } },
         ]),
         Assignment.aggregate([
           { $match: { course: { $in: courseIds } } },
-          { $group: { _id: '$course', count: { $sum: 1 } } },
+          { $group: { _id: "$course", count: { $sum: 1 } } },
         ]),
         Quiz.aggregate([
           { $match: { course: { $in: courseIds } } },
-          { $group: { _id: '$course', count: { $sum: 1 } } },
+          { $group: { _id: "$course", count: { $sum: 1 } } },
         ]),
         LiveClass.aggregate([
           { $match: { course: { $in: courseIds } } },
-          { $group: { _id: '$course', count: { $sum: 1 } } },
+          { $group: { _id: "$course", count: { $sum: 1 } } },
         ]),
         Submission.countDocuments({
           assignment: {
-            $in: await Assignment.find({ course: { $in: courseIds } }).distinct('_id'),
+            $in: await Assignment.find({ course: { $in: courseIds } }).distinct("_id"),
           },
-          status: 'submitted',
+          status: "submitted",
         }),
       ]);
 
@@ -49,10 +49,10 @@ export async function getTeacherDashboard(req, res) {
     // Upcoming live classes
     const upcomingClasses = await LiveClass.find({
       course: { $in: courseIds },
-      status: { $in: ['scheduled', 'live'] },
+      status: { $in: ["scheduled", "live"] },
       scheduledAt: { $gte: new Date() },
     })
-      .populate('course', 'title')
+      .populate("course", "title")
       .sort({ scheduledAt: 1 })
       .limit(5);
 
@@ -74,8 +74,8 @@ export async function getTeacherDashboard(req, res) {
       })),
     });
   } catch (err) {
-    console.error('getTeacherDashboard error:', err);
-    res.status(500).json({ error: 'Failed to fetch dashboard.' });
+    console.error("getTeacherDashboard error:", err);
+    res.status(500).json({ error: "Failed to fetch dashboard." });
   }
 }
 
@@ -84,7 +84,7 @@ export async function getStudentDashboard(req, res) {
   try {
     const { id } = req.params;
     const courses = await Course.find({ enrolledStudents: id })
-      .populate('teacher', 'name')
+      .populate("teacher", "name")
       .sort({ createdAt: -1 });
 
     const courseIds = courses.map((c) => c._id);
@@ -93,26 +93,26 @@ export async function getStudentDashboard(req, res) {
       await Promise.all([
         Material.aggregate([
           { $match: { course: { $in: courseIds } } },
-          { $group: { _id: '$course', count: { $sum: 1 } } },
+          { $group: { _id: "$course", count: { $sum: 1 } } },
         ]),
         Assignment.aggregate([
           { $match: { course: { $in: courseIds } } },
-          { $group: { _id: '$course', count: { $sum: 1 } } },
+          { $group: { _id: "$course", count: { $sum: 1 } } },
         ]),
         Quiz.aggregate([
           { $match: { course: { $in: courseIds }, isActive: true } },
-          { $group: { _id: '$course', count: { $sum: 1 } } },
+          { $group: { _id: "$course", count: { $sum: 1 } } },
         ]),
         Submission.find({
           student: id,
           assignment: {
-            $in: await Assignment.find({ course: { $in: courseIds } }).distinct('_id'),
+            $in: await Assignment.find({ course: { $in: courseIds } }).distinct("_id"),
           },
-        }).select('assignment status score'),
+        }).select("assignment status score"),
         QuizResult.find({
           student: id,
-          quiz: { $in: await Quiz.find({ course: { $in: courseIds } }).distinct('_id') },
-        }).select('quiz score totalPoints'),
+          quiz: { $in: await Quiz.find({ course: { $in: courseIds } }).distinct("_id") },
+        }).select("quiz score totalPoints"),
       ]);
 
     const toMap = (arr) => Object.fromEntries(arr.map((x) => [x._id.toString(), x.count]));
@@ -124,7 +124,7 @@ export async function getStudentDashboard(req, res) {
     const completedQuizzes = new Set(myQuizResults.map((r) => r.quiz.toString()));
 
     // Total pending assignments across all courses
-    const totalAssignments = await Assignment.find({ course: { $in: courseIds } }).distinct('_id');
+    const totalAssignments = await Assignment.find({ course: { $in: courseIds } }).distinct("_id");
     const pendingAssignments = totalAssignments.filter(
       (aId) => !submittedAssignments.has(aId.toString())
     ).length;
@@ -132,10 +132,10 @@ export async function getStudentDashboard(req, res) {
     // Upcoming live classes for this student
     const upcomingClasses = await LiveClass.find({
       course: { $in: courseIds },
-      status: { $in: ['scheduled', 'live'] },
+      status: { $in: ["scheduled", "live"] },
       scheduledAt: { $gte: new Date() },
     })
-      .populate('course', 'title')
+      .populate("course", "title")
       .sort({ scheduledAt: 1 })
       .limit(5);
 
@@ -156,8 +156,8 @@ export async function getStudentDashboard(req, res) {
       })),
     });
   } catch (err) {
-    console.error('getStudentDashboard error:', err);
-    res.status(500).json({ error: 'Failed to fetch dashboard.' });
+    console.error("getStudentDashboard error:", err);
+    res.status(500).json({ error: "Failed to fetch dashboard." });
   }
 }
 

@@ -1,6 +1,6 @@
-import Quiz from '../models/Quiz.js';
-import QuizResult from '../models/QuizResult.js';
-import Course from '../models/Course.js';
+import Quiz from "../models/Quiz.js";
+import QuizResult from "../models/QuizResult.js";
+import Course from "../models/Course.js";
 
 // ─── POST /api/courses/:courseId/quizzes ──────────────────────────────────────
 export async function createQuiz(req, res) {
@@ -9,13 +9,13 @@ export async function createQuiz(req, res) {
     const { title, description, questions, timeLimit, dueDate, teacherId } = req.body;
 
     if (!title || !teacherId)
-      return res.status(400).json({ error: 'title and teacherId are required.' });
+      return res.status(400).json({ error: "title and teacherId are required." });
 
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
     if (course.teacher.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the course teacher can create quizzes.' });
+      return res.status(403).json({ error: "Only the course teacher can create quizzes." });
 
     const quiz = await Quiz.create({
       title,
@@ -29,8 +29,8 @@ export async function createQuiz(req, res) {
 
     res.status(201).json(formatQuiz(quiz));
   } catch (err) {
-    console.error('createQuiz error:', err);
-    res.status(500).json({ error: 'Failed to create quiz.' });
+    console.error("createQuiz error:", err);
+    res.status(500).json({ error: "Failed to create quiz." });
   }
 }
 
@@ -40,25 +40,25 @@ export async function getCourseQuizzes(req, res) {
     const { courseId } = req.params;
 
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
     const quizzes = await Quiz.find({ course: courseId }).sort({ createdAt: -1 });
     res.json(quizzes.map(formatQuiz));
   } catch (err) {
-    console.error('getCourseQuizzes error:', err);
-    res.status(500).json({ error: 'Failed to fetch quizzes.' });
+    console.error("getCourseQuizzes error:", err);
+    res.status(500).json({ error: "Failed to fetch quizzes." });
   }
 }
 
 // ─── GET /api/quizzes/:id ─────────────────────────────────────────────────────
 export async function getQuiz(req, res) {
   try {
-    const quiz = await Quiz.findById(req.params.id).populate('createdBy', 'name');
-    if (!quiz) return res.status(404).json({ error: 'Quiz not found.' });
+    const quiz = await Quiz.findById(req.params.id).populate("createdBy", "name");
+    if (!quiz) return res.status(404).json({ error: "Quiz not found." });
     res.json(formatQuiz(quiz));
   } catch (err) {
-    console.error('getQuiz error:', err);
-    res.status(500).json({ error: 'Failed to fetch quiz.' });
+    console.error("getQuiz error:", err);
+    res.status(500).json({ error: "Failed to fetch quiz." });
   }
 }
 
@@ -68,10 +68,10 @@ export async function updateQuiz(req, res) {
     const { title, description, questions, timeLimit, dueDate, isActive, teacherId } = req.body;
 
     const quiz = await Quiz.findById(req.params.id);
-    if (!quiz) return res.status(404).json({ error: 'Quiz not found.' });
+    if (!quiz) return res.status(404).json({ error: "Quiz not found." });
 
     if (quiz.createdBy.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the quiz creator can update it.' });
+      return res.status(403).json({ error: "Only the quiz creator can update it." });
 
     if (title !== undefined) quiz.title = title;
     if (description !== undefined) quiz.description = description;
@@ -83,8 +83,8 @@ export async function updateQuiz(req, res) {
 
     res.json(formatQuiz(quiz));
   } catch (err) {
-    console.error('updateQuiz error:', err);
-    res.status(500).json({ error: 'Failed to update quiz.' });
+    console.error("updateQuiz error:", err);
+    res.status(500).json({ error: "Failed to update quiz." });
   }
 }
 
@@ -94,18 +94,18 @@ export async function deleteQuiz(req, res) {
     const { teacherId } = req.body;
 
     const quiz = await Quiz.findById(req.params.id);
-    if (!quiz) return res.status(404).json({ error: 'Quiz not found.' });
+    if (!quiz) return res.status(404).json({ error: "Quiz not found." });
 
     if (quiz.createdBy.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the quiz creator can delete it.' });
+      return res.status(403).json({ error: "Only the quiz creator can delete it." });
 
     await Quiz.findByIdAndDelete(req.params.id);
     await QuizResult.deleteMany({ quiz: req.params.id });
 
-    res.json({ message: 'Quiz deleted.' });
+    res.json({ message: "Quiz deleted." });
   } catch (err) {
-    console.error('deleteQuiz error:', err);
-    res.status(500).json({ error: 'Failed to delete quiz.' });
+    console.error("deleteQuiz error:", err);
+    res.status(500).json({ error: "Failed to delete quiz." });
   }
 }
 
@@ -116,17 +116,16 @@ export async function submitQuiz(req, res) {
     const { studentId, answers } = req.body;
 
     if (!studentId || !Array.isArray(answers))
-      return res.status(400).json({ error: 'studentId and answers array are required.' });
+      return res.status(400).json({ error: "studentId and answers array are required." });
 
     const quiz = await Quiz.findById(id);
-    if (!quiz) return res.status(404).json({ error: 'Quiz not found.' });
-    if (!quiz.isActive) return res.status(400).json({ error: 'This quiz is no longer active.' });
+    if (!quiz) return res.status(404).json({ error: "Quiz not found." });
+    if (!quiz.isActive) return res.status(400).json({ error: "This quiz is no longer active." });
 
     // Check enrollment
     const course = await Course.findById(quiz.course);
     const isEnrolled = course.enrolledStudents.some((s) => s.toString() === studentId);
-    if (!isEnrolled)
-      return res.status(403).json({ error: 'You are not enrolled in this course.' });
+    if (!isEnrolled) return res.status(403).json({ error: "You are not enrolled in this course." });
 
     // Grade the quiz
     let score = 0;
@@ -147,8 +146,8 @@ export async function submitQuiz(req, res) {
 
     res.status(201).json(formatResult(result));
   } catch (err) {
-    console.error('submitQuiz error:', err);
-    res.status(500).json({ error: 'Failed to submit quiz.' });
+    console.error("submitQuiz error:", err);
+    res.status(500).json({ error: "Failed to submit quiz." });
   }
 }
 
@@ -160,19 +159,19 @@ export async function getQuizResults(req, res) {
     const { teacherId } = req.query;
 
     const quiz = await Quiz.findById(id);
-    if (!quiz) return res.status(404).json({ error: 'Quiz not found.' });
+    if (!quiz) return res.status(404).json({ error: "Quiz not found." });
 
     if (quiz.createdBy.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the quiz creator can view all results.' });
+      return res.status(403).json({ error: "Only the quiz creator can view all results." });
 
     const results = await QuizResult.find({ quiz: id })
-      .populate('student', 'name email')
+      .populate("student", "name email")
       .sort({ submittedAt: -1 });
 
     res.json(results.map(formatResult));
   } catch (err) {
-    console.error('getQuizResults error:', err);
-    res.status(500).json({ error: 'Failed to fetch results.' });
+    console.error("getQuizResults error:", err);
+    res.status(500).json({ error: "Failed to fetch results." });
   }
 }
 
@@ -183,15 +182,15 @@ export async function getMyResult(req, res) {
     const { id } = req.params;
     const { studentId } = req.query;
 
-    if (!studentId) return res.status(400).json({ error: 'studentId is required.' });
+    if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const result = await QuizResult.findOne({ quiz: id, student: studentId });
-    if (!result) return res.status(404).json({ error: 'No result found.' });
+    if (!result) return res.status(404).json({ error: "No result found." });
 
     res.json(formatResult(result));
   } catch (err) {
-    console.error('getMyResult error:', err);
-    res.status(500).json({ error: 'Failed to fetch result.' });
+    console.error("getMyResult error:", err);
+    res.status(500).json({ error: "Failed to fetch result." });
   }
 }
 
@@ -202,9 +201,7 @@ function formatQuiz(q) {
     title: q.title,
     description: q.description,
     course: q.course,
-    createdBy: q.createdBy
-      ? { id: q.createdBy._id || q.createdBy, name: q.createdBy.name }
-      : null,
+    createdBy: q.createdBy ? { id: q.createdBy._id || q.createdBy, name: q.createdBy.name } : null,
     questions: q.questions,
     timeLimit: q.timeLimit,
     dueDate: q.dueDate,

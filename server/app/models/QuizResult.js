@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const answerSchema = new mongoose.Schema({
   questionIndex: { type: Number, required: true },
@@ -7,8 +7,8 @@ const answerSchema = new mongoose.Schema({
 
 const quizResultSchema = new mongoose.Schema(
   {
-    quiz: { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz', required: true },
-    student: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz", required: true },
+    student: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     answers: [answerSchema],
     score: { type: Number, default: 0 },
     totalPoints: { type: Number, default: 0 },
@@ -20,4 +20,4 @@ const quizResultSchema = new mongoose.Schema(
 // one result per student per quiz
 quizResultSchema.index({ quiz: 1, student: 1 }, { unique: true });
 
-export default mongoose.model('QuizResult', quizResultSchema);
+export default mongoose.model("QuizResult", quizResultSchema);
