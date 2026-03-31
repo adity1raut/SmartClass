@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
 import supertest from 'supertest';
+import mongoose from 'mongoose';
 import User from '../app/models/User.js';
 import { buildApp } from '../app.js';
 
@@ -209,4 +210,12 @@ describe('Auth API', () => {
       expect(res.status).toBe(400);
     });
   });
+});
+
+afterAll(async () => {
+  const cols = mongoose.connection.collections;
+  for (const key of Object.keys(cols)) {
+    await cols[key].deleteMany({});
+  }
+  global.__testOtp = undefined;
 });

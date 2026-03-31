@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { Link } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 
 const SOCIAL = [
@@ -9,9 +10,24 @@ const SOCIAL = [
 ];
 
 const LINKS = {
-  Product: ["Features", "Pricing", "Security", "Enterprise"],
-  Company: ["About", "Blog", "Careers", "Contact"],
-  Legal: ["Privacy", "Terms", "Cookies", "License"],
+  Product: [
+    { label: "Features", to: "/features" },
+    { label: "Pricing", to: "/pricing" },
+    { label: "Security", to: "/security" },
+    { label: "Enterprise", to: "/enterprise" },
+  ],
+  Company: [
+    { label: "About", to: "/about" },
+    { label: "Blog", to: "/blog" },
+    { label: "Careers", to: "/careers" },
+    { label: "Contact", to: "/contact" },
+  ],
+  Legal: [
+    { label: "Privacy", to: "/privacy" },
+    { label: "Terms", to: "/terms" },
+    { label: "Cookies", to: "/cookies" },
+    { label: "License", to: "/license" },
+  ],
 };
 
 function Footer() {
@@ -81,15 +97,15 @@ function Footer() {
                 </h4>
                 <ul className="space-y-2 sm:space-y-3 text-[11px] sm:text-sm">
                   {items.map((item) => (
-                    <li key={item}>
-                      <a
-                        href="#"
+                    <li key={item.label}>
+                      <Link
+                        to={item.to}
                         className="text-[var(--muted)] hover:text-[var(--accent)] transition-all duration-300 inline-block
                                    hover:translate-x-1 relative group"
                       >
-                        <span>{item}</span>
+                        <span>{item.label}</span>
                         <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-[var(--accent)] transition-all duration-300 group-hover:w-full" />
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

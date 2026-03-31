@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
+import mongoose from 'mongoose';
 import { buildApp } from '../app.js';
 import { createTestUser, loginUser, createTestCourse } from './helpers.js';
 
@@ -96,7 +97,7 @@ describe('Enrollments API', () => {
         .set('Cookie', teacherCookie);
 
       expect(res.status).toBe(200);
-      expect(Array.isArray(res.body)).toBe(true);
+      expect(Array.isArray(res.body.enrollments)).toBe(true);
     });
   });
 
@@ -142,4 +143,11 @@ describe('Enrollments API', () => {
       expect(res.status).toBe(400);
     });
   });
+});
+
+afterAll(async () => {
+  const cols = mongoose.connection.collections;
+  for (const key of Object.keys(cols)) {
+    await cols[key].deleteMany({});
+  }
 });
