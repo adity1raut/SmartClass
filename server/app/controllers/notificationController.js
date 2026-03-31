@@ -1,12 +1,10 @@
-import Notification from '../models/Notification.js';
+import Notification from "../models/Notification.js";
 
 // GET /api/notifications/:userId
 export async function getNotifications(req, res) {
   try {
     const { userId } = req.params;
-    const notifs = await Notification.find({ user: userId })
-      .sort({ createdAt: -1 })
-      .limit(50);
+    const notifs = await Notification.find({ user: userId }).sort({ createdAt: -1 }).limit(50);
 
     res.json(
       notifs.map((n) => ({
@@ -18,8 +16,8 @@ export async function getNotifications(req, res) {
       }))
     );
   } catch (err) {
-    console.error('getNotifications error:', err);
-    res.status(500).json({ error: 'Failed to fetch notifications.' });
+    console.error("getNotifications error:", err);
+    res.status(500).json({ error: "Failed to fetch notifications." });
   }
 }
 
@@ -28,9 +26,9 @@ export async function markAllRead(req, res) {
   try {
     const { userId } = req.params;
     await Notification.updateMany({ user: userId, read: false }, { read: true });
-    res.json({ message: 'All notifications marked as read.' });
+    res.json({ message: "All notifications marked as read." });
   } catch (err) {
-    console.error('markAllRead error:', err);
-    res.status(500).json({ error: 'Failed to update notifications.' });
+    console.error("markAllRead error:", err);
+    res.status(500).json({ error: "Failed to update notifications." });
   }
 }

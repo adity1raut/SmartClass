@@ -5,6 +5,6 @@ export function initIO(io) {
 }
 
 export function getIO() {
-  if (!_io) throw new Error('Socket.IO not initialized');
+  if (!_io) throw new Error("Socket.IO not initialized");
   return _io;
 }

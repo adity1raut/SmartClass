@@ -1,8 +1,7 @@
-import Material from '../models/Material.js';
-import Course from '../models/Course.js';
-import User from '../models/User.js';
-import CompletedMaterial from '../models/CompletedMaterial.js';
-import Enrollment from '../models/Enrollment.js';
+import Material from "../models/Material.js";
+import Course from "../models/Course.js";
+import CompletedMaterial from "../models/CompletedMaterial.js";
+import Enrollment from "../models/Enrollment.js";
 
 // ─── POST /api/courses/:courseId/materials ────────────────────────────────────
 export async function addMaterial(req, res) {
@@ -11,27 +10,27 @@ export async function addMaterial(req, res) {
     const { title, description, type, fileUrl, teacherId } = req.body;
 
     if (!title || !teacherId)
-      return res.status(400).json({ error: 'title and teacherId are required.' });
+      return res.status(400).json({ error: "title and teacherId are required." });
 
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
     if (course.teacher.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the course teacher can add materials.' });
+      return res.status(403).json({ error: "Only the course teacher can add materials." });
 
     const material = await Material.create({
       title,
       description,
-      type: type || 'other',
-      fileUrl: fileUrl || '',
+      type: type || "other",
+      fileUrl: fileUrl || "",
       course: courseId,
       uploadedBy: teacherId,
     });
 
     res.status(201).json(formatMaterial(material));
   } catch (err) {
-    console.error('addMaterial error:', err);
-    res.status(500).json({ error: 'Failed to add material.' });
+    console.error("addMaterial error:", err);
+    res.status(500).json({ error: "Failed to add material." });
   }
 }
 
@@ -41,16 +40,16 @@ export async function getCourseMaterials(req, res) {
     const { courseId } = req.params;
 
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
     const materials = await Material.find({ course: courseId })
-      .populate('uploadedBy', 'name')
+      .populate("uploadedBy", "name")
       .sort({ createdAt: -1 });
 
     res.json(materials.map(formatMaterial));
   } catch (err) {
-    console.error('getCourseMaterials error:', err);
-    res.status(500).json({ error: 'Failed to fetch materials.' });
+    console.error("getCourseMaterials error:", err);
+    res.status(500).json({ error: "Failed to fetch materials." });
   }
 }
 
@@ -61,13 +60,13 @@ export async function updateMaterial(req, res) {
     const { title, description, type, fileUrl, teacherId } = req.body;
 
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
     if (course.teacher.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the course teacher can update materials.' });
+      return res.status(403).json({ error: "Only the course teacher can update materials." });
 
     const material = await Material.findOne({ _id: materialId, course: courseId });
-    if (!material) return res.status(404).json({ error: 'Material not found.' });
+    if (!material) return res.status(404).json({ error: "Material not found." });
 
     if (title !== undefined) material.title = title;
     if (description !== undefined) material.description = description;
@@ -77,8 +76,8 @@ export async function updateMaterial(req, res) {
 
     res.json(formatMaterial(material));
   } catch (err) {
-    console.error('updateMaterial error:', err);
-    res.status(500).json({ error: 'Failed to update material.' });
+    console.error("updateMaterial error:", err);
+    res.status(500).json({ error: "Failed to update material." });
   }
 }
 
@@ -89,18 +88,18 @@ export async function deleteMaterial(req, res) {
     const { teacherId } = req.body;
 
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ error: 'Course not found.' });
+    if (!course) return res.status(404).json({ error: "Course not found." });
 
     if (course.teacher.toString() !== teacherId)
-      return res.status(403).json({ error: 'Only the course teacher can delete materials.' });
+      return res.status(403).json({ error: "Only the course teacher can delete materials." });
 
     const material = await Material.findOneAndDelete({ _id: materialId, course: courseId });
-    if (!material) return res.status(404).json({ error: 'Material not found.' });
+    if (!material) return res.status(404).json({ error: "Material not found." });
 
-    res.json({ message: 'Material deleted.' });
+    res.json({ message: "Material deleted." });
   } catch (err) {
-    console.error('deleteMaterial error:', err);
-    res.status(500).json({ error: 'Failed to delete material.' });
+    console.error("deleteMaterial error:", err);
+    res.status(500).json({ error: "Failed to delete material." });
   }
 }
 
@@ -109,10 +108,10 @@ export async function markComplete(req, res) {
   try {
     const { courseId, materialId } = req.params;
     const { studentId } = req.body;
-    if (!studentId) return res.status(400).json({ error: 'studentId is required.' });
+    if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const material = await Material.findOne({ _id: materialId, course: courseId });
-    if (!material) return res.status(404).json({ error: 'Material not found.' });
+    if (!material) return res.status(404).json({ error: "Material not found." });
 
     await CompletedMaterial.findOneAndUpdate(
       { student: studentId, material: materialId },
@@ -123,10 +122,10 @@ export async function markComplete(req, res) {
     // Recalculate and sync enrollment progress
     await syncProgress(studentId, courseId);
 
-    res.json({ message: 'Material marked as completed.' });
+    res.json({ message: "Material marked as completed." });
   } catch (err) {
-    console.error('markComplete error:', err);
-    res.status(500).json({ error: 'Failed to mark material as completed.' });
+    console.error("markComplete error:", err);
+    res.status(500).json({ error: "Failed to mark material as completed." });
   }
 }
 
@@ -135,15 +134,15 @@ export async function unmarkComplete(req, res) {
   try {
     const { courseId, materialId } = req.params;
     const { studentId } = req.body;
-    if (!studentId) return res.status(400).json({ error: 'studentId is required.' });
+    if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     await CompletedMaterial.findOneAndDelete({ student: studentId, material: materialId });
     await syncProgress(studentId, courseId);
 
-    res.json({ message: 'Material marked as incomplete.' });
+    res.json({ message: "Material marked as incomplete." });
   } catch (err) {
-    console.error('unmarkComplete error:', err);
-    res.status(500).json({ error: 'Failed to unmark material.' });
+    console.error("unmarkComplete error:", err);
+    res.status(500).json({ error: "Failed to unmark material." });
   }
 }
 
@@ -153,11 +152,11 @@ export async function getMaterialProgress(req, res) {
   try {
     const { courseId } = req.params;
     const { studentId } = req.query;
-    if (!studentId) return res.status(400).json({ error: 'studentId is required.' });
+    if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const [materials, completed] = await Promise.all([
       Material.find({ course: courseId }).sort({ order: 1, createdAt: 1 }),
-      CompletedMaterial.find({ student: studentId, course: courseId }).select('material'),
+      CompletedMaterial.find({ student: studentId, course: courseId }).select("material"),
     ]);
 
     const completedSet = new Set(completed.map((c) => c.material.toString()));
@@ -174,8 +173,8 @@ export async function getMaterialProgress(req, res) {
       })),
     });
   } catch (err) {
-    console.error('getMaterialProgress error:', err);
-    res.status(500).json({ error: 'Failed to fetch progress.' });
+    console.error("getMaterialProgress error:", err);
+    res.status(500).json({ error: "Failed to fetch progress." });
   }
 }
 
@@ -188,10 +187,15 @@ async function syncProgress(studentId, courseId) {
     ]);
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
     const update = { progress };
-    if (progress === 100) { update.status = 'completed'; update.completedAt = new Date(); }
-    else { update.status = 'active'; update.completedAt = null; }
+    if (progress === 100) {
+      update.status = "completed";
+      update.completedAt = new Date();
+    } else {
+      update.status = "active";
+      update.completedAt = null;
+    }
     await Enrollment.findOneAndUpdate({ student: studentId, course: courseId }, update);
-  } catch (_) {
+  } catch {
     // non-critical — don't fail the request
   }
 }

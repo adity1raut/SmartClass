@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const questionSchema = new mongoose.Schema({
   question: { type: String, required: true, trim: true },
@@ -10,9 +10,9 @@ const questionSchema = new mongoose.Schema({
 const quizSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
-    description: { type: String, trim: true, default: '' },
-    course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    description: { type: String, trim: true, default: "" },
+    course: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     questions: [questionSchema],
     timeLimit: { type: Number, default: 0 }, // minutes; 0 = no limit
     dueDate: { type: Date },
@@ -21,4 +21,4 @@ const quizSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model('Quiz', quizSchema);
+export default mongoose.model("Quiz", quizSchema);

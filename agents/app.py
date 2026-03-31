@@ -11,8 +11,12 @@ Docs available at:
     http://localhost:8000/docs
 """
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from routes.info import router as info_router
 from routes.student import router as student_router
@@ -28,9 +32,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
+cors_origin = os.getenv("CORS_ORIGIN", "http://localhost:5173")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:5000", "*"],
+    allow_origins=[cors_origin, "http://localhost:3000", "http://localhost:5000", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,4 +55,9 @@ app.include_router(teacher_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "app:app",
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", 8000)),
+        reload=True,
+    )
