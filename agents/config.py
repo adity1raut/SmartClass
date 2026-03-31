@@ -12,5 +12,5 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 if not ANTHROPIC_API_KEY:
     raise RuntimeError("ANTHROPIC_API_KEY is not set in environment variables.")
 
-MODEL = "claude-sonnet-4-6"
+MODEL = os.getenv("MODEL", "claude-sonnet-4-6")
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
