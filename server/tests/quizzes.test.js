@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
+import mongoose from 'mongoose';
 import { buildApp } from '../app.js';
 import { createTestUser, loginUser, createTestCourse, enrollStudent } from './helpers.js';
 
@@ -204,4 +205,11 @@ describe('Quizzes API', () => {
       expect(res.status).toBe(200);
     });
   });
+});
+
+afterAll(async () => {
+  const cols = mongoose.connection.collections;
+  for (const key of Object.keys(cols)) {
+    await cols[key].deleteMany({});
+  }
 });

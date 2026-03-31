@@ -2,7 +2,7 @@
 
 A full-stack LMS platform with real-time features, multi-role dashboards, and an integrated Claude AI agent for students and teachers.
 
-**Stack:** React 19 · Express 5 · MongoDB · Socket.IO · FastAPI · Claude Sonnet 4.6 · TailwindCSS · Recharts
+**Stack:** React 19 · Express 5 · MongoDB · Socket.IO · FastAPI · TailwindCSS · Recharts
 
 ---
 

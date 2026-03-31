@@ -14,7 +14,9 @@ vi.mock('../app/services/socketService.js', () => ({
 vi.mock('../app/config/NodeMailer.js', () => ({
   default: {
     sendMail: vi.fn(async ({ html }) => {
-      const match = html?.match(/(\d{6})/);
+      // Match 6 digits that appear as a text node (between > and <), not inside an attribute.
+      // This avoids matching hex colour codes like #374151 that appear in CSS style attributes.
+      const match = html?.match(/>\s*(\d{6})\s*</);
       if (match) global.__testOtp = match[1];
       return { messageId: 'test-msg-id' };
     }),

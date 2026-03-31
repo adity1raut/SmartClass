@@ -41,9 +41,11 @@ const TAB_META = {
 
 function CourseView() {
   const { user } = useAuth();
-  const { id } = useParams();
+  const { id, tab: urlTab } = useParams();
   const navigate = useNavigate();
   const isTeacher = user.role === "teacher";
+
+  const tab = Object.keys(TAB_META).includes(urlTab) ? urlTab : "materials";
 
   const [course, setCourse] = useState(null);
   const [materials, setMaterials] = useState([]);
@@ -55,7 +57,6 @@ function CourseView() {
   const [completedMats, setCompletedMats] = useState(new Set());
   const [matProgress, setMatProgress] = useState(0);
 
-  const [tab, setTab] = useState("materials");
   const [modal, setModal] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -497,7 +498,7 @@ function CourseView() {
                   return (
                     <button
                       key={t}
-                      onClick={() => setTab(t)}
+                      onClick={() => navigate(`/course/${id}/${t}`)}
                       className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl
                                   text-sm font-semibold transition-all duration-200 cursor-pointer mb-0.5
                                   relative overflow-hidden
@@ -634,7 +635,7 @@ function CourseView() {
                 return (
                   <button
                     key={t}
-                    onClick={() => setTab(t)}
+                    onClick={() => navigate(`/course/${id}/${t}`)}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl whitespace-nowrap
                                 text-xs font-bold transition-all duration-200 cursor-pointer shrink-0
                                 ${

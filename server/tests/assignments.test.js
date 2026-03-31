@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import supertest from 'supertest';
+import mongoose from 'mongoose';
 import { buildApp } from '../app.js';
 import { createTestUser, loginUser, createTestCourse, enrollStudent } from './helpers.js';
 
@@ -154,9 +155,10 @@ describe('Assignments API', () => {
 
       await request
         .post(`/api/assignments/${aId}/submit`)
+        .set('Cookie', studentCookie)
         .send({ studentId: student.id, content: 'Done' });
 
-      const res = await request.get(`/api/assignments/${aId}/submissions`);
+      const res = await request.get(`/api/assignments/${aId}/submissions?teacherId=${teacher.id}`);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThan(0);
@@ -174,9 +176,10 @@ describe('Assignments API', () => {
 
       await request
         .post(`/api/assignments/${aId}/submit`)
+        .set('Cookie', studentCookie)
         .send({ studentId: student.id, content: 'My work' });
 
-      const subsRes = await request.get(`/api/assignments/${aId}/submissions`);
+      const subsRes = await request.get(`/api/assignments/${aId}/submissions?teacherId=${teacher.id}`);
       const submissionId = subsRes.body[0].id;
 
       const res = await request
@@ -205,4 +208,11 @@ describe('Assignments API', () => {
       expect(res.status).toBe(200);
     });
   });
+});
+
+afterAll(async () => {
+  const cols = mongoose.connection.collections;
+  for (const key of Object.keys(cols)) {
+    await cols[key].deleteMany({});
+  }
 });
