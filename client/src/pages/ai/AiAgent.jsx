@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { post, inp, lbl, SendBtn, ResponseBox } from "../../utils/aiShared";
+import { post, inp, lbl } from "../../utils/aiUtils";
+import { SendBtn, ResponseBox } from "../../utils/aiShared";
 
 const EXAMPLES = [
   "Generate a 5-question quiz on recursion AND create a study plan for a student weak in algorithms who has 10 hours per week",

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { post, inp, lbl, SendBtn, ResponseBox } from "../../utils/aiShared";
+import { post, inp, lbl } from "../../utils/aiUtils";
+import { SendBtn, ResponseBox } from "../../utils/aiShared";
 
 export default function AiExplain() {
   const [form, setForm] = useState({

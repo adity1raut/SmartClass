@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { post, inp, lbl, SendBtn, MarkdownText } from "../../utils/aiShared";
+import { post, inp, lbl } from "../../utils/aiUtils";
+import { SendBtn, MarkdownText } from "../../utils/aiShared";
 
 export default function AiChat() {
   const [messages, setMessages] = useState([]);

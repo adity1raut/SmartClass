@@ -1,31 +1,5 @@
-/**
- * aiShared.jsx — Shared utilities for all AI feature pages.
- */
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-export const AI_BASE = "/api/ai";
-
-export const inp =
-  "w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 transition-all duration-300 glass text-[var(--text)] placeholder:text-[var(--muted)]/50 hover:border-[var(--accent)]/30";
-
-export const lbl =
-  "block text-xs font-semibold text-[var(--muted)] uppercase tracking-wider mb-1.5";
-
-export async function post(path, body) {
-  const res = await fetch(`${AI_BASE}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res
-      .json()
-      .catch(() => ({ detail: `HTTP ${res.status}` }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
 
 export function SendBtn({ loading, label = "Send" }) {
   return (
@@ -176,7 +150,11 @@ function ResponseRenderer({ data }) {
               {q.options.map((opt, j) => (
                 <li
                   key={j}
-                  className={`text-sm px-3 py-1.5 rounded-lg ${j === q.correct_answer ? "bg-green-500/15 text-green-400 font-semibold border border-green-500/30" : "text-[var(--muted)]"}`}
+                  className={`text-sm px-3 py-1.5 rounded-lg ${
+                    j === q.correct_answer
+                      ? "bg-green-500/15 text-green-400 font-semibold border border-green-500/30"
+                      : "text-[var(--muted)]"
+                  }`}
                 >
                   {String.fromCharCode(65 + j)}. {opt}
                 </li>
@@ -200,7 +178,11 @@ function ResponseRenderer({ data }) {
           {data.tools_used.map((t, i) => (
             <span
               key={i}
-              className={`text-xs px-3 py-1 rounded-full font-semibold border ${t.success ? "border-green-500/30 text-green-400 bg-green-500/10" : "border-red-400/30 text-red-400 bg-red-500/10"}`}
+              className={`text-xs px-3 py-1 rounded-full font-semibold border ${
+                t.success
+                  ? "border-green-500/30 text-green-400 bg-green-500/10"
+                  : "border-red-400/30 text-red-400 bg-red-500/10"
+              }`}
             >
               {t.success ? "✓" : "✗"} {t.tool}
             </span>
@@ -249,28 +231,6 @@ export function ResponseBox({ data, error }) {
       </div>
       <div className="p-4 max-h-[60vh] overflow-y-auto">
         <ResponseRenderer data={data} />
-      </div>
-    </div>
-  );
-}
-
-/** Wraps a page with Navbar + standard header + Footer. */
-export function AiPageShell({ icon, title, subtitle, children }) {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-1">
-            <span className="text-4xl">{icon}</span>
-            <h1 className="text-3xl font-black text-[var(--text)]">{title}</h1>
-          </div>
-          <p className="text-[var(--muted)] text-sm ml-1">
-            {subtitle ?? "AI Playground"}
-          </p>
-        </div>
-        <div className="glass-heavy rounded-2xl border border-[var(--border)]/40 p-6 shadow-xl">
-          {children}
-        </div>
       </div>
     </div>
   );
