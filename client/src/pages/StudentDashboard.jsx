@@ -207,10 +207,37 @@ function StudentDashboard() {
   const [perfContext, setPerfContext] = useState(null); // real performance data from DB
 
   const openAiModal = (type) => {
+    if (!user?.id) return;
+
     setAiModal(type);
     setAiResult(null);
     setAiError("");
     setPlanSaved(false);
+
+    if (type === "chat") {
+      setChatInput("");
+      setAiError("");
+    }
+
+    if (type === "explain") {
+      setExplainForm((f) => ({
+        ...f,
+        concept: f.concept || "",
+        difficulty_level: f.difficulty_level || "intermediate",
+        course_context: f.course_context || "",
+      }));
+    }
+
+    if (type === "performance") {
+      setPerfForm((f) => ({
+        ...f,
+        subject: f.subject || "",
+        quiz_scores: f.quiz_scores || "",
+        assignment_grades: f.assignment_grades || "",
+        course_progress: f.course_progress || 0,
+      }));
+    }
+
     if (type === "plan") {
       setPlanForm((f) => ({
         ...f,
@@ -246,6 +273,17 @@ function StudentDashboard() {
     setAiError("");
     setPlanSaved(false);
   };
+
+  useEffect(() => {
+    if (aiModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [aiModal]);
 
   async function aiPost(path, body, method = "POST") {
     const res = await apiFetch(`/api/ai${path}`, {
@@ -739,6 +777,7 @@ function StudentDashboard() {
               },
             ].map((tool) => (
               <button
+                type="button"
                 key={tool.type}
                 onClick={() => openAiModal(tool.type)}
                 className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-left hover:shadow-lg hover:border-emerald-300 transition-all duration-200 hover:-translate-y-0.5 transform"

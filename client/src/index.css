@@ -69,15 +69,6 @@ body {
     box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3);
   }
 
-  .glass-heavy {
-    background: color-mix(in srgb, var(--surface) 90%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border) 120%, transparent);
-    border-radius: 1.25rem;
-    backdrop-filter: blur(32px) saturate(160%);
-    -webkit-backdrop-filter: blur(32px) saturate(160%);
-    box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.32);
-  }
-
   /* ─── Buttons ─── */
   .btn-primary {
     background: linear-gradient(135deg, #7cff6b 0%, #10b981 100%);
