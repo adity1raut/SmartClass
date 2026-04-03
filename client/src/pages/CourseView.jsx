@@ -71,6 +71,8 @@ function CourseView() {
     description: "",
     type: "video",
     fileUrl: "",
+    uploadFile: null,
+    uploadMode: "url",
   });
   const [assForm, setAssForm] = useState({
     title: "",
@@ -180,14 +182,35 @@ function CourseView() {
   const saveMaterial = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const res = await apiFetch(`/api/courses/${id}/materials`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...matForm, teacherId: user.id }),
-    });
+    let res;
+    if (matForm.uploadFile) {
+      const formData = new FormData();
+      formData.append("file", matForm.uploadFile);
+      formData.append("title", matForm.title);
+      formData.append("description", matForm.description || "");
+      formData.append("type", matForm.type);
+      formData.append("teacherId", user.id);
+      res = await apiFetch(`/api/courses/${id}/materials/upload`, {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      res = await apiFetch(`/api/courses/${id}/materials`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...matForm, teacherId: user.id }),
+      });
+    }
     if (res.ok) {
       setModal(null);
-      setMatForm({ title: "", description: "", type: "video", fileUrl: "" });
+      setMatForm({
+        title: "",
+        description: "",
+        type: "video",
+        fileUrl: "",
+        uploadFile: null,
+        uploadMode: "url",
+      });
       loadMaterials();
     }
     setSaving(false);
@@ -450,7 +473,7 @@ function CourseView() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-[var(--text)] flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#0f172a,_#020617)] text-white flex flex-col relative overflow-hidden">
       <Navbar showBack />
 
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
@@ -474,19 +497,13 @@ function CourseView() {
             style={{ top: "1rem" }}
           >
             {/* Sidebar nav card */}
-            <div className="glass-heavy rounded-2xl overflow-hidden border border-[var(--border)]/20 shadow-xl">
+            <div className="glass-dark rounded-2xl overflow-hidden border border-white/5 shadow-2xl glow">
               {/* Sidebar header */}
-              <div
-                className="px-4 py-3.5 border-b border-[var(--border)]/15"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--accent)/8%, transparent)",
-                }}
-              >
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]/70 mb-0.5">
+              <div className="px-4 py-4 border-b border-white/5 bg-gradient-to-r from-[#7CFF4F]/10 to-transparent">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                   Course Content
                 </p>
-                <p className="text-xs font-bold text-[var(--text)] truncate">
+                <p className="text-sm font-semibold text-white truncate">
                   {course.title}
                 </p>
               </div>
@@ -501,13 +518,12 @@ function CourseView() {
                       key={t}
                       onClick={() => navigate(`/course/${id}/${t}`)}
                       className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl
-                                  text-sm font-semibold transition-all duration-200 cursor-pointer mb-0.5
-                                  relative overflow-hidden
-                                  ${
-                                    isActive
-                                      ? "text-[var(--accent)]"
-                                      : "text-[var(--muted)] hover:text-[var(--text)]"
-                                  }`}
+text-sm font-semibold transition-all duration-300 cursor-pointer mb-1 relative overflow-hidden
+${
+  isActive
+    ? "text-[#7CFF4F] bg-[#7CFF4F]/10 glow"
+    : "text-gray-400 hover:text-white hover:bg-white/5"
+}`}
                       style={
                         isActive
                           ? {
@@ -525,12 +541,12 @@ function CourseView() {
 
                       {/* Icon */}
                       <span
-                        className={`relative w-8 h-8 rounded-xl flex items-center justify-center text-base shrink-0 transition-all duration-300
-                                        ${
-                                          isActive
-                                            ? `bg-gradient-to-br ${meta.color} shadow-lg scale-105`
-                                            : "bg-[var(--border)]/15 group-hover:bg-[var(--border)]/25"
-                                        }`}
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all
+  ${
+    isActive
+      ? "bg-[#7CFF4F]/20 text-[#7CFF4F]"
+      : "bg-white/5 group-hover:bg-white/10"
+  }`}
                       >
                         {meta.icon}
                       </span>
@@ -567,9 +583,9 @@ function CourseView() {
                       {matProgress}%
                     </span>
                   </div>
-                  <div className="h-1.5 bg-[var(--border)]/20 rounded-full overflow-hidden">
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[var(--accent)] to-violet-500 rounded-full transition-all duration-700"
+                      className="h-full bg-gradient-to-r from-[#7CFF4F] to-lime-400 rounded-full transition-all duration-700 shadow-[0_0_10px_#7CFF4F]"
                       style={{ width: `${matProgress}%` }}
                     />
                   </div>
@@ -581,7 +597,7 @@ function CourseView() {
 
               {/* Quick stats for teacher */}
               {isTeacher && (
-                <div className="px-4 py-3 border-t border-[var(--border)]/15">
+                <div className="px-4 py-2 rounded-xl bg-[#7CFF4F] text-black font-semibold glow-hover transition-all duration-300">
                   <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-2">
                     Overview
                   </p>
@@ -595,7 +611,7 @@ function CourseView() {
                       {
                         label: "Materials",
                         val: materials.length,
-                        color: "text-blue-400",
+                        color: "text-emerald-400",
                       },
                       {
                         label: "Quizzes",
@@ -610,7 +626,7 @@ function CourseView() {
                     ].map((s) => (
                       <div
                         key={s.label}
-                        className="glass rounded-xl p-2 text-center border border-[var(--border)]/10"
+                        className="glass-dark rounded-2xl p-6 border border-white/10 shadow-2xl glow"
                       >
                         <p className={`text-sm font-black ${s.color}`}>
                           {s.val}
@@ -627,7 +643,7 @@ function CourseView() {
           </aside>
 
           {/* ── MAIN CONTENT ── */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 space-y-5">
             {/* Mobile tab selector */}
             <div className="flex gap-2 overflow-x-auto pb-2 mb-4 md:hidden scrollbar-hide">
               {tabs.map((t) => {
@@ -658,58 +674,60 @@ function CourseView() {
             </div>
 
             {/* Tab content */}
-            <div className="animate-[fade-in_0.3s_ease_both]" key={tab}>
-              {tab === "materials" && (
-                <MaterialsTab
-                  materials={materials}
-                  isTeacher={isTeacher}
-                  completedMats={completedMats}
-                  onToggleComplete={toggleComplete}
-                  onDelete={deleteMaterial}
-                  onAddClick={() => setModal("material")}
-                />
-              )}
-              {tab === "assignments" && (
-                <AssignmentsTab
-                  assignments={assignments}
-                  isTeacher={isTeacher}
-                  mySubmissions={mySubmissions}
-                  expandedSubs={expandedSubs}
-                  submissionText={submissionText}
-                  onSubmit={submitAssignment}
-                  onToggleSubs={toggleSubs}
-                  onDelete={deleteAssignment}
-                  onGrade={(subId, score, feedback) => {
-                    setGradingSubId(subId);
-                    setGradeForm({
-                      score: score ?? "",
-                      feedback: feedback ?? "",
-                    });
-                  }}
-                  onAddClick={() => setModal("assignment")}
-                />
-              )}
-              {tab === "quizzes" && (
-                <QuizzesTab
-                  quizzes={quizzes}
-                  isTeacher={isTeacher}
-                  onDelete={deleteQuiz}
-                  onAddClick={() => setModal("quiz")}
-                />
-              )}
-              {tab === "live-classes" && (
-                <LiveClassesTab
-                  liveClasses={liveClasses}
-                  isTeacher={isTeacher}
-                  onStatusChange={setClassStatus}
-                  onDelete={deleteLiveClass}
-                  onJoin={joinClass}
-                  onAddClick={() => setModal("live-class")}
-                />
-              )}
-              {tab === "students" && isTeacher && (
-                <StudentsTab students={students} />
-              )}
+            <div className="glass-dark rounded-2xl p-5 border border-white/5 shadow-xl glow animate-fade-in">
+              <div className="animate-[fade-in_0.3s_ease_both]" key={tab}>
+                {tab === "materials" && (
+                  <MaterialsTab
+                    materials={materials}
+                    isTeacher={isTeacher}
+                    completedMats={completedMats}
+                    onToggleComplete={toggleComplete}
+                    onDelete={deleteMaterial}
+                    onAddClick={() => setModal("material")}
+                  />
+                )}
+                {tab === "assignments" && (
+                  <AssignmentsTab
+                    assignments={assignments}
+                    isTeacher={isTeacher}
+                    mySubmissions={mySubmissions}
+                    expandedSubs={expandedSubs}
+                    submissionText={submissionText}
+                    onSubmit={submitAssignment}
+                    onToggleSubs={toggleSubs}
+                    onDelete={deleteAssignment}
+                    onGrade={(subId, score, feedback) => {
+                      setGradingSubId(subId);
+                      setGradeForm({
+                        score: score ?? "",
+                        feedback: feedback ?? "",
+                      });
+                    }}
+                    onAddClick={() => setModal("assignment")}
+                  />
+                )}
+                {tab === "quizzes" && (
+                  <QuizzesTab
+                    quizzes={quizzes}
+                    isTeacher={isTeacher}
+                    onDelete={deleteQuiz}
+                    onAddClick={() => setModal("quiz")}
+                  />
+                )}
+                {tab === "live-classes" && (
+                  <LiveClassesTab
+                    liveClasses={liveClasses}
+                    isTeacher={isTeacher}
+                    onStatusChange={setClassStatus}
+                    onDelete={deleteLiveClass}
+                    onJoin={joinClass}
+                    onAddClick={() => setModal("live-class")}
+                  />
+                )}
+                {tab === "students" && isTeacher && (
+                  <StudentsTab students={students} />
+                )}
+              </div>
             </div>
           </div>
         </div>

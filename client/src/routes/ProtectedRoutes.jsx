@@ -40,9 +40,8 @@ function ProtectedRoutes() {
       <Route path="/course/:id" element={<CourseViewRedirect />} />
       <Route path="/course/:id/:tab" element={<CourseView />} />
       <Route path="/quiz/:id" element={<QuizView />} />
-      <Route path="/live-class/:id" element={<LiveClassRoom />} />
-      <Route path="/live-classes" element={<Navigate to="/" replace />} />
 
+      <Route path="/live-class/:id" element={<LiveClassRoom />} />
       {/* AI — each feature is its own page */}
       <Route
         path="/ai-playground"
@@ -55,6 +54,7 @@ function ProtectedRoutes() {
       <Route path="/ai-playground/study-plan" element={<AiStudyPlan />} />
       <Route path="/ai-playground/explain" element={<AiExplain />} />
       <Route path="/ai-playground/performance" element={<AiPerformance />} />
+
       <Route
         path="/ai-playground/course-outline"
         element={<AiCourseOutline />}
