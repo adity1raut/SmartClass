@@ -23,11 +23,10 @@ function fileFilter(_req, file, cb) {
   cb(new Error("Only video files are allowed."));
 }
 
-// 2 GB max — long classes can be large
 const recordingUpload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 * 1024 },
+  limits: { fileSize: parseInt(process.env.RECORDING_MAX_SIZE_BYTES) || 2147483648 },
 });
 
 export default recordingUpload;

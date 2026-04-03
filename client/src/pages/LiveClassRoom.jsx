@@ -4,10 +4,12 @@ import { useAuth } from "../context/AuthContext";
 import { getSocket } from "../socket";
 
 const ICE_CONFIG = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-  ],
+  iceServers: (
+    import.meta.env.VITE_STUN_SERVERS ||
+    "stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302"
+  )
+    .split(",")
+    .map((url) => ({ urls: url.trim() })),
 };
 
 const REACTIONS = ["👍", "❤️", "😂", "🎉", "🔥", "👏"];

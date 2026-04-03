@@ -17,7 +17,11 @@ export const MODEL = process.env.AI_MODEL || "claude-sonnet-4-6";
 // Base helper
 // ---------------------------------------------------------------------------
 
-async function callClaude(prompt, maxTokens = 2000, system = "") {
+async function callClaude(
+  prompt,
+  maxTokens = parseInt(process.env.AI_MAX_TOKENS_DEFAULT) || 2000,
+  system = ""
+) {
   const params = {
     model: MODEL,
     max_tokens: maxTokens,
@@ -52,7 +56,7 @@ Rules:
 - All 4 options must be plausible (no obviously wrong answers)
 - Questions should test understanding, not just memorization
 - Vary question types: factual, application, analysis`;
-  return callClaude(prompt, 3000);
+  return callClaude(prompt, parseInt(process.env.AI_MAX_TOKENS_QUIZ) || 3000);
 }
 
 export async function summarizeMaterial(params) {
@@ -72,7 +76,7 @@ ${content}
 ---
 
 Make it clear, engaging, and optimized for student revision.`;
-  return callClaude(prompt, 1500);
+  return callClaude(prompt, parseInt(process.env.AI_MAX_TOKENS_SUMMARIZE) || 1500);
 }
 
 export async function explainConcept(params) {
@@ -99,7 +103,7 @@ Structure your response with these sections:
 ### How It Works
 ### ${includeExamples ? "Example" : "Key Points"}
 ### Key Takeaways`;
-  return callClaude(prompt, 1500);
+  return callClaude(prompt, parseInt(process.env.AI_MAX_TOKENS_EXPLAIN) || 1500);
 }
 
 export async function gradeAndFeedback(params) {
@@ -137,7 +141,7 @@ X / ${maxScore} — with clear justification
 (2-3 concrete actions the student can take to improve)
 
 Be encouraging but honest. Focus on learning growth.`;
-  return callClaude(prompt, 1500);
+  return callClaude(prompt, parseInt(process.env.AI_MAX_TOKENS_GRADE) || 1500);
 }
 
 export async function createStudySchedule(params) {
@@ -177,7 +181,7 @@ Generate a structured plan with:
 
 ### Progress Check Tips
 (How to self-assess learning)`;
-  return callClaude(prompt, 2500);
+  return callClaude(prompt, parseInt(process.env.AI_MAX_TOKENS_SCHEDULE) || 2500);
 }
 
 export async function analyzePerformance(params) {
@@ -219,7 +223,7 @@ Provide a comprehensive analysis:
 
 ### Motivational Note
 (Brief encouraging message to keep them going)`;
-  return callClaude(prompt, 1500);
+  return callClaude(prompt, parseInt(process.env.AI_MAX_TOKENS_PERFORMANCE) || 1500);
 }
 
 export async function generateCourseOutline(params) {
@@ -258,5 +262,5 @@ For each of the ${weeks} weeks provide:
 
 ### Teaching Tips
 (Pedagogical suggestions for delivering this course effectively)`;
-  return callClaude(prompt, 3500);
+  return callClaude(prompt, parseInt(process.env.AI_MAX_TOKENS_OUTLINE) || 3500);
 }

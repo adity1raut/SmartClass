@@ -199,28 +199,13 @@ export default function LearningHero() {
             </div>
 
             {/* Avatar SVG illustration */}
-            <div className="relative z-10 w-44 sm:w-52 text-center">
-              <svg viewBox="0 0 120 160" width="100%" height="100%">
-                <ellipse cx="60" cy="55" rx="28" ry="30" fill="#c8d8c8" />
-                <ellipse cx="60" cy="130" rx="46" ry="38" fill="#c8d8c8" />
-                <rect
-                  x="28"
-                  y="108"
-                  width="64"
-                  height="36"
-                  rx="6"
-                  fill="#a0b8a0"
-                />
-                <rect
-                  x="20"
-                  y="142"
-                  width="80"
-                  height="6"
-                  rx="3"
-                  fill="#8aaa8a"
-                />
-              </svg>
-              <p className="mt-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            <div className="relative z-10 w-full sm:w-full lg:w-[600px] text-center">
+              <img
+                src="/student.png"
+                alt="Online Learner"
+                className="w-full h-auto object-cover border-transparent"
+              />
+              <p className="mt-4 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                 Online Learner
               </p>
             </div>
