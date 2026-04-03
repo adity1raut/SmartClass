@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeContext, themes as themeMap } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { getSocket } from "../socket";
+import { apiFetch } from "../utils/api.js";
 
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000);
@@ -86,7 +87,7 @@ function Navbar({ showBack }) {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    fetch(`/api/notifications/${user.id}`)
+    apiFetch(`/api/notifications/${user.id}`)
       .then((r) => r.json())
       .then((d) => Array.isArray(d) && setNotifs(d));
 
@@ -159,7 +160,9 @@ function Navbar({ showBack }) {
   }, []);
 
   const markAll = async () => {
-    await fetch(`/api/notifications/read-all/${user.id}`, { method: "PATCH" });
+    await apiFetch(`/api/notifications/read-all/${user.id}`, {
+      method: "PATCH",
+    });
     setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
@@ -194,7 +197,7 @@ function Navbar({ showBack }) {
                 ? user.role === "teacher"
                   ? "/teacher-dashboard"
                   : "/student-dashboard"
-                : "/signin",
+                : "/",
             )
           }
           className="flex items-center gap-2 sm:gap-3 no-underline min-w-0 group bg-transparent border-none cursor-pointer 
@@ -581,14 +584,14 @@ function Navbar({ showBack }) {
           /* GUEST / NOT AUTHENTICATED SECTION */
           <>
             <button
-              onClick={() => navigate("/signin")}
+              onClick={() => navigate("/")}
               className="hidden sm:flex px-4 py-2 rounded-xl text-sm font-semibold 
                          border border-[var(--border)]/50 text-[var(--text)] glass
                          hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/8
                          hover:shadow-[0_4px_16px_-4px_var(--accent)]
                          transition-all duration-300 cursor-pointer active:scale-95"
             >
-              Sign In
+              Home
             </button>
 
             <button

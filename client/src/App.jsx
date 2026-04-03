@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
 import PublicRoutes from "./routes/PublicRoutes";
 import ThemeApplier from "./theme/ThemeApplier";
+import Mainpage from "./pages/Mainpage";
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -17,11 +18,17 @@ function AppRoutes() {
 
 function App() {
   const [themeName, setThemeName] = useState(
-    () => localStorage.getItem("smartclass_theme") || "light",
+    () =>
+      localStorage.getItem(
+        import.meta.env.VITE_STORAGE_THEME_KEY || "smartclass_theme",
+      ) || "light",
   );
 
   useEffect(() => {
-    localStorage.setItem("smartclass_theme", themeName);
+    localStorage.setItem(
+      import.meta.env.VITE_STORAGE_THEME_KEY || "smartclass_theme",
+      themeName,
+    );
   }, [themeName]);
 
   const themeContextValue = useMemo(

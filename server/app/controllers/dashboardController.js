@@ -54,7 +54,7 @@ export async function getTeacherDashboard(req, res) {
     })
       .populate("course", "title")
       .sort({ scheduledAt: 1 })
-      .limit(5);
+      .limit(parseInt(process.env.DASHBOARD_UPCOMING_LIMIT) || 5);
 
     res.json({
       totalCourses: courses.length,
@@ -137,7 +137,7 @@ export async function getStudentDashboard(req, res) {
     })
       .populate("course", "title")
       .sort({ scheduledAt: 1 })
-      .limit(5);
+      .limit(parseInt(process.env.DASHBOARD_UPCOMING_LIMIT) || 5);
 
     res.json({
       totalEnrolled: courses.length,
