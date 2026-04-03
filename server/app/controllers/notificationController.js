@@ -4,7 +4,9 @@ import Notification from "../models/Notification.js";
 export async function getNotifications(req, res) {
   try {
     const { userId } = req.params;
-    const notifs = await Notification.find({ user: userId }).sort({ createdAt: -1 }).limit(50);
+    const notifs = await Notification.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .limit(parseInt(process.env.NOTIFICATION_LIMIT) || 50);
 
     res.json(
       notifs.map((n) => ({

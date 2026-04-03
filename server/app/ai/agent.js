@@ -54,7 +54,11 @@ async function dispatchTool(toolName, toolInput) {
  *
  * @returns {{ response: string, tools_used: object[], iterations: number }}
  */
-export async function runAgent(task, context = {}, maxIterations = 10) {
+export async function runAgent(
+  task,
+  context = {},
+  maxIterations = parseInt(process.env.AI_AGENT_MAX_ITERATIONS) || 10
+) {
   const contextStr =
     Object.keys(context).length > 0
       ? `\n\n**Additional Context:**\n${JSON.stringify(context, null, 2)}`
@@ -68,7 +72,7 @@ export async function runAgent(task, context = {}, maxIterations = 10) {
     iterations++;
     const response = await getClient().messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: parseInt(process.env.AI_AGENT_MAX_TOKENS) || 4096,
       system: AGENT_SYSTEM_PROMPT,
       tools: SMARTCLASS_TOOLS,
       messages,

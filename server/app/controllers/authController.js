@@ -14,7 +14,10 @@ function saveOtp(email, otp) {
   // Clear any existing timer for this email
   if (otpStore.has(email)) clearTimeout(otpStore.get(email).timer);
 
-  const timer = setTimeout(() => otpStore.delete(email), 5 * 60 * 1000); // 5 min
+  const timer = setTimeout(
+    () => otpStore.delete(email),
+    parseInt(process.env.OTP_EXPIRES_MS) || 300000
+  );
   otpStore.set(email, { otp, timer });
 }
 
@@ -33,19 +36,19 @@ function generateOtp() {
   return crypto.randomInt(100000, 999999).toString();
 }
 
-const COOKIE_NAME = "sc_token";
+const COOKIE_NAME = process.env.COOKIE_NAME || "sc_token";
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  maxAge: parseInt(process.env.JWT_COOKIE_MAX_AGE) || 604800000,
 };
 
 function setAuthCookie(res, user) {
   const token = jwt.sign(
     { id: user._id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
   res.cookie(COOKIE_NAME, token, COOKIE_OPTS);
 }
