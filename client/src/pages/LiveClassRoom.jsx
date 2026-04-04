@@ -135,8 +135,12 @@ export default function LiveClassRoom() {
   const [chatOpen, setChatOpen] = useState(true);
   const [panelTab, setPanelTab] = useState("chat");
   const [commentText, setCommentText] = useState("");
+<<<<<<< HEAD
+  const [replyTo, setReplyTo] = useState(null); // { id, userName }
+=======
   const [replyTo, setReplyTo] = useState(null);
   const [questionText, setQuestionText] = useState("");
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
   const chatEndRef = useRef(null);
 
   // ── presence state ──────────────────────────────────────────────────────────
@@ -353,7 +357,7 @@ export default function LiveClassRoom() {
     } catch {
       /* user cancelled */
     }
-  }, [id, socket]);
+  }, [id, socket, stopScreenShare]);
 
   const stopScreenShare = useCallback(() => {
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -547,6 +551,9 @@ export default function LiveClassRoom() {
     [id, user.id, commentText, replyTo],
   );
 
+<<<<<<< HEAD
+  // Mount pending screen stream once remoteScreenRef is available
+=======
   const postQuestion = useCallback(
     async (e) => {
       e.preventDefault();
@@ -576,6 +583,7 @@ export default function LiveClassRoom() {
   );
 
   // Mount pending screen stream once ref is available
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
   useEffect(() => {
     if (
       teacherHasScreen &&
@@ -839,7 +847,22 @@ export default function LiveClassRoom() {
         ["recording-available", onRecordingAvailable],
       ].forEach(([ev, fn]) => socket.off(ev, fn));
     };
+<<<<<<< HEAD
+  }, [
+    id,
+    isTeacher,
+    loadClass,
+    loadComments,
+    loadQuestions,
+    makePeerForViewer,
+    navigate,
+    showReaction,
+    socket,
+    user.id,
+  ]);
+=======
   }, [id, isTeacher]); // eslint-disable-line react-hooks/exhaustive-deps
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
 
   // ─── derived ──────────────────────────────────────────────────────────────
   const topLevel = comments.filter((c) => !c.parentComment);
@@ -1363,6 +1386,140 @@ export default function LiveClassRoom() {
           </div>
         </div>
 
+<<<<<<< HEAD
+        {/* ═══ SIDEBAR PANEL ════════════════════════════════════════════════════ */}
+        <aside className="w-80 flex flex-col shrink-0 border-l border-[var(--border)]/15 bg-[var(--surface)]/80 backdrop-blur-xl">
+          {/* Tabs */}
+          <div className="p-2 border-b border-[var(--border)]/15">
+            <div className="flex bg-[var(--border)]/10 rounded-xl p-1">
+              {[
+                { key: "chat", label: "💬 Chat", badge: comments.length },
+                {
+                  key: "qa",
+                  label: "❓ Q&A",
+                  badge: questions.filter((q) => !q.isAnswered).length,
+                },
+                { key: "people", label: "👥", badge: handCount || null },
+              ].map(({ key, label, badge }) => (
+                <button
+                  key={key}
+                  onClick={() => setPanelTab(key)}
+                  className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-medium transition-all
+          ${
+            panelTab === key
+              ? "bg-[var(--surface)] shadow-sm text-[var(--text)]"
+              : "text-[var(--muted)] hover:text-[var(--text)]"
+          }`}
+                >
+                  {label}
+                  {badge > 0 && (
+                    <span className="text-[9px] px-1.5 rounded bg-[var(--border)]/20">
+                      {badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── CHAT ── */}
+          {panelTab === "chat" && (
+            <>
+              <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+                {topLevel.length === 0 && (
+                  <div className="h-full flex flex-col items-center justify-center opacity-40">
+                    <span className="text-3xl">💬</span>
+                    <p className="text-xs text-[var(--muted)] mt-2">
+                      No messages yet
+                    </p>
+                  </div>
+                )}
+
+                {topLevel.map((c) => {
+                  const replies = getReplies(c.id);
+
+                  return (
+                    <div key={c.id} className="space-y-2">
+                      <div className="flex gap-2">
+                        <Avatar name={c.user?.name || "?"} />
+
+                        <div className="flex-1">
+                          {/* Header */}
+                          <div className="flex items-center gap-2 text-[11px]">
+                            <span className="font-semibold text-[var(--text)]">
+                              {c.user?.name}
+                            </span>
+
+                            {c.isTeacherReply && (
+                              <span className="px-1.5 py-[2px] text-[9px] rounded bg-[var(--accent)]/15 text-[var(--accent)]">
+                                Teacher
+                              </span>
+                            )}
+
+                            <span className="text-[var(--muted)]/50">
+                              {timeAgo(c.createdAt)}
+                            </span>
+                          </div>
+
+                          {/* Message bubble */}
+                          <div className="mt-1 px-3 py-2 rounded-xl bg-[var(--border)]/10 text-[13px] text-[var(--text)]/90 leading-snug">
+                            {c.text}
+                          </div>
+
+                          <button
+                            onClick={() =>
+                              setReplyTo(
+                                replyTo?.id === c.id
+                                  ? null
+                                  : { id: c.id, userName: c.user?.name },
+                              )
+                            }
+                            className="mt-1 text-[10px] text-[var(--muted)] hover:text-[var(--accent)]"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Replies */}
+                      {replies.length > 0 && (
+                        <div className="ml-8 space-y-2 border-l border-[var(--border)]/20 pl-3">
+                          {replies.map((r) => (
+                            <div key={r.id} className="flex gap-2">
+                              <Avatar name={r.user?.name || "?"} />
+                              <div className="flex-1">
+                                <p className="text-[11px] font-medium">
+                                  {r.user?.name}
+                                </p>
+                                <div className="mt-1 px-3 py-2 rounded-lg bg-[var(--border)]/8 text-[12px]">
+                                  {r.text}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Input */}
+              <form
+                onSubmit={postComment}
+                className="p-3 border-t border-[var(--border)]/15 flex gap-2"
+              >
+                <input
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Send a message…"
+                  className="flex-1 px-3 py-2 rounded-xl text-sm border border-[var(--border)]/25 bg-transparent focus:border-[var(--accent)] outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={!commentText.trim()}
+                  className="w-9 h-9 rounded-xl bg-[var(--accent)] text-white flex items-center justify-center disabled:opacity-40"
+=======
         {/* ═ CHAT / Q&A / PEOPLE SIDEBAR ════════════════════════════════════ */}
         {chatOpen && (
           <aside className="w-80 flex flex-col border-l border-white/8 bg-[#1c1c1e] shrink-0">
@@ -1382,6 +1539,7 @@ export default function LiveClassRoom() {
                         ? "text-violet-300 border-b-2 border-violet-400"
                         : "text-white/35 hover:text-white/70"
                     }`}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                 >
                   {label}
                   {badge > 0 && (
@@ -1393,6 +1551,46 @@ export default function LiveClassRoom() {
               ))}
             </div>
 
+<<<<<<< HEAD
+          {/* ── Q&A ── */}
+          {panelTab === "qa" && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {questions.map((q) => (
+                <div
+                  key={q.id}
+                  className={`p-4 rounded-xl border ${
+                    q.isAnswered
+                      ? "bg-emerald-500/10 border-emerald-500/20"
+                      : "bg-[var(--border)]/10 border-[var(--border)]/15"
+                  }`}
+                >
+                  <p className="text-[13px] font-medium">{q.question}</p>
+
+                  {q.isAnswered && (
+                    <span className="text-[10px] text-emerald-400 mt-1 inline-block">
+                      Answered
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── PEOPLE ── */}
+          {panelTab === "people" && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {/* Host */}
+              <div>
+                <p className="text-[10px] uppercase text-[var(--muted)] mb-2">
+                  Host
+                </p>
+
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--border)]/10 border border-[var(--border)]/15">
+                  <Avatar name={liveClass.teacher?.name || "T"} />
+                  <p className="text-[13px] font-semibold">
+                    {liveClass.teacher?.name}
+                  </p>
+=======
             {/* ─ Chat ─────────────────────────────────────────────────────── */}
             {panelTab === "chat" && (
               <>
@@ -1654,8 +1852,20 @@ export default function LiveClassRoom() {
                       </div>
                     </div>
                   </div>
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                 </div>
 
+<<<<<<< HEAD
+              {/* Participants */}
+              <div>
+                <p className="text-[10px] uppercase text-[var(--muted)] mb-2">
+                  Participants · {participantCount}
+                </p>
+
+                <p className="text-[12px] text-[var(--muted)]">
+                  {participantCount} people joined
+                </p>
+=======
                 {/* Raised hands */}
                 {handCount > 0 && (
                   <div>
@@ -1751,6 +1961,7 @@ export default function LiveClassRoom() {
                     </a>
                   )}
                 </div>
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
               </div>
             )}
           </aside>

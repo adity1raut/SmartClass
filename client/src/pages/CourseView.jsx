@@ -167,7 +167,16 @@ function CourseView() {
     loadLiveClasses();
     loadStudents();
     loadProgress();
-  }, [id]);
+  }, [
+    id,
+    loadCourse,
+    loadMaterials,
+    loadAssignments,
+    loadQuizzes,
+    loadLiveClasses,
+    loadStudents,
+    loadProgress,
+  ]);
 
   // Keep ref in sync so async socket handlers can read latest expanded state
   useEffect(() => {
@@ -583,11 +592,15 @@ function CourseView() {
   };
 
   return (
+<<<<<<< HEAD
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+=======
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col transition-colors duration-300">
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
       <Navbar showBack />
 
-      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* Course Header Banner */}
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {/* Header */}
         <CourseHeader
           course={course}
           materials={materials}
@@ -598,6 +611,17 @@ function CourseView() {
           matProgress={matProgress}
         />
 
+<<<<<<< HEAD
+        {/* Layout */}
+        <div className="flex gap-6 items-start">
+          {/* ── SIDEBAR ── */}
+          <aside className="hidden md:flex flex-col w-64 shrink-0 sticky top-6 self-start">
+            <div className="rounded-2xl border border-[var(--border)]/15 bg-[var(--surface)]/80 backdrop-blur-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.25)] overflow-hidden">
+              {/* Header */}
+              <div className="px-5 py-5 border-b border-[var(--border)]/15 bg-[var(--bg)]/60 backdrop-blur-md">
+                <p className="text-[10px] uppercase tracking-widest text-[var(--muted)] font-medium mb-1">
+                  Course
+=======
         {/* Two-column layout: Left Sidebar + Content */}
         <div className="flex gap-5 items-start">
           {/* ── LEFT SIDEBAR ── */}
@@ -612,21 +636,40 @@ function CourseView() {
               <div className="px-4 py-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--accent)]/8 to-transparent">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
                   Course Content
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                 </p>
                 <p className="text-sm font-semibold text-[var(--text)] truncate">
                   {course.title}
                 </p>
               </div>
 
-              {/* Tab buttons */}
-              <div className="p-2">
+              {/* Tabs */}
+              <div className="p-2.5 space-y-1.5">
                 {tabs.map((t) => {
                   const meta = TAB_META[t];
                   const isActive = tab === t;
+
                   return (
                     <button
                       key={t}
                       onClick={() => navigate(`/course/${id}/${t}`)}
+<<<<<<< HEAD
+                      className={`group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200
+            ${
+              isActive
+                ? "bg-[var(--accent)]/12 text-[var(--accent)] border border-[var(--accent)]/20"
+                : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--border)]/10"
+            }`}
+                    >
+                      {/* Icon */}
+                      <span
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-all
+              ${
+                isActive
+                  ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                  : "bg-[var(--border)]/10 group-hover:bg-[var(--border)]/20"
+              }`}
+=======
                       className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl
 text-sm font-semibold transition-all duration-200 cursor-pointer mb-1 relative overflow-hidden border-none
 ${
@@ -648,23 +691,33 @@ ${
       ? "bg-[var(--accent)]/20"
       : "bg-[var(--surface-elevated)] group-hover:bg-[var(--border)]"
   }`}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                       >
                         {meta.icon}
                       </span>
 
                       {/* Label */}
-                      <span className="relative flex-1 text-left text-xs font-bold truncate">
+                      <span className="flex-1 text-left text-xs font-medium truncate">
                         {meta.label}
                       </span>
 
-                      {/* Count badge */}
+                      {/* Count */}
                       <span
+<<<<<<< HEAD
+                        className={`text-[10px] font-medium px-2 py-[2px] rounded-md transition-all
+              ${
+                isActive
+                  ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                  : "bg-[var(--border)]/20 text-[var(--muted)] group-hover:bg-[var(--border)]/30"
+              }`}
+=======
                         className={`relative text-[10px] font-black px-2 py-0.5 rounded-lg shrink-0 transition-all duration-200
                                         ${
                                           isActive
                                             ? "bg-[var(--accent)]/20 text-[var(--accent)]"
                                             : "bg-[var(--border)] text-[var(--muted)]"
                                         }`}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                       >
                         {tabCount[t]}
                       </span>
@@ -672,6 +725,8 @@ ${
                   );
                 })}
               </div>
+<<<<<<< HEAD
+=======
 
               {/* Progress strip for students */}
               {!isTeacher && materials.length > 0 && (
@@ -740,33 +795,32 @@ ${
                   </div>
                 </div>
               )}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
             </div>
           </aside>
 
           {/* ── MAIN CONTENT ── */}
           <div className="flex-1 min-w-0 space-y-5">
-            {/* Mobile tab selector */}
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 md:hidden scrollbar-hide">
+            {/* Mobile Tabs */}
+            <div className="flex gap-2 overflow-x-auto pb-2 md:hidden">
               {tabs.map((t) => {
                 const meta = TAB_META[t];
                 const isActive = tab === t;
+
                 return (
                   <button
                     key={t}
                     onClick={() => navigate(`/course/${id}/${t}`)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl whitespace-nowrap
-                                text-xs font-bold transition-all duration-200 cursor-pointer shrink-0
-                                ${
-                                  isActive
-                                    ? "bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20"
-                                    : "glass border border-[var(--border)]/20 text-[var(--muted)] hover:text-[var(--text)]"
-                                }`}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all duration-200
+                  ${
+                    isActive
+                      ? "bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20"
+                      : "text-[var(--muted)] border border-[var(--border)]/20 hover:bg-[var(--border)]/10"
+                  }`}
                   >
-                    <span>{meta.icon}</span>
-                    <span>{meta.label}</span>
-                    <span
-                      className={`text-[9px] font-black px-1 py-0.5 rounded ${isActive ? "bg-[var(--accent)]/20 text-[var(--accent)]" : "bg-[var(--border)]/20 text-[var(--muted)]"}`}
-                    >
+                    {meta.icon}
+                    {meta.label}
+                    <span className="text-[9px] px-1 rounded bg-[var(--border)]/20">
                       {tabCount[t]}
                     </span>
                   </button>
@@ -774,9 +828,15 @@ ${
               })}
             </div>
 
+<<<<<<< HEAD
+            {/* Content */}
+            <div className="rounded-[2rem] border border-[var(--border)]/20 bg-[var(--surface)] p-6 shadow-[0_24px_64px_-40px_rgba(15,23,42,0.45)]">
+              <div key={tab} className="animate-[fadeIn_0.25s_ease]">
+=======
             {/* Tab content */}
             <div className="rounded-2xl p-5 border border-[var(--border)] bg-[var(--surface)] shadow-sm animate-fade-in transition-colors duration-300">
               <div className="animate-[fade-in_0.3s_ease_both]" key={tab}>
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                 {tab === "materials" && (
                   <MaterialsTab
                     materials={materials}
@@ -787,6 +847,7 @@ ${
                     onAddClick={() => setModal("material")}
                   />
                 )}
+
                 {tab === "assignments" && (
                   <AssignmentsTab
                     assignments={assignments}
@@ -807,6 +868,7 @@ ${
                     onAddClick={() => setModal("assignment")}
                   />
                 )}
+
                 {tab === "quizzes" && (
                   <QuizzesTab
                     quizzes={quizzes}
@@ -815,6 +877,7 @@ ${
                     onAddClick={() => setModal("quiz")}
                   />
                 )}
+
                 {tab === "live-classes" && (
                   <LiveClassesTab
                     liveClasses={liveClasses}
@@ -825,6 +888,7 @@ ${
                     onAddClick={() => setModal("live-class")}
                   />
                 )}
+
                 {tab === "students" && isTeacher && (
                   <StudentsTab students={students} />
                 )}
@@ -836,6 +900,7 @@ ${
 
       <Footer />
 
+      {/* Modals untouched */}
       <GradeModal
         isOpen={!!gradingSubId}
         gradeForm={gradeForm}

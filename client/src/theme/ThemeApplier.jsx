@@ -23,6 +23,21 @@ const themeStyles = {
     className: "light",
   },
   dark: {
+<<<<<<< HEAD
+    "--bg": "#0a0a0a",
+    "--surface": "#111827",
+    "--surface-elevated": "#1f2937",
+    "--text": "#ffffff",
+    "--text-secondary": "#f1f5f9",
+    "--muted": "#9ca3af",
+    "--accent": "#7cff6b",
+    "--accent-light": "#9cff8a",
+    "--accent-contrast": "#0a0a0a",
+    "--border": "#374151",
+    "--border-light": "#4b5563",
+    "--shadow-color": "0 0% 0%",
+    "--glow-color": "120 100% 50%",
+=======
     "--bg": "#0f172a",
     "--surface": "#1e293b",
     "--surface-elevated": "#273549",
@@ -41,6 +56,7 @@ const themeStyles = {
     "--warning": "#f59e0b",
     "--danger": "#f87171",
     "--info": "#38bdf8",
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
     className: "dark",
   },
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api.js";
@@ -7,6 +7,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { GraduationCap } from "lucide-react";
+import { Brain, ClipboardList, Clock, Calendar, FileText } from "lucide-react";
+import { BookOpen, Video } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -22,6 +25,14 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import {
+  MessageCircle,
+  CalendarDays,
+  Lightbulb,
+  BarChart3,
+  BrainCircuit,
+  Sparkles,
+} from "lucide-react";
 
 function SdAiMarkdown({ text }) {
   return (
@@ -203,10 +214,37 @@ function StudentDashboard() {
   const [perfContext, setPerfContext] = useState(null); // real performance data from DB
 
   const openAiModal = (type) => {
+    if (!user?.id) return;
+
     setAiModal(type);
     setAiResult(null);
     setAiError("");
     setPlanSaved(false);
+
+    if (type === "chat") {
+      setChatInput("");
+      setAiError("");
+    }
+
+    if (type === "explain") {
+      setExplainForm((f) => ({
+        ...f,
+        concept: f.concept || "",
+        difficulty_level: f.difficulty_level || "intermediate",
+        course_context: f.course_context || "",
+      }));
+    }
+
+    if (type === "performance") {
+      setPerfForm((f) => ({
+        ...f,
+        subject: f.subject || "",
+        quiz_scores: f.quiz_scores || "",
+        assignment_grades: f.assignment_grades || "",
+        course_progress: f.course_progress || 0,
+      }));
+    }
+
     if (type === "plan") {
       setPlanForm((f) => ({
         ...f,
@@ -242,6 +280,17 @@ function StudentDashboard() {
     setAiError("");
     setPlanSaved(false);
   };
+
+  useEffect(() => {
+    if (aiModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [aiModal]);
 
   async function aiPost(path, body, method = "POST") {
     const res = await apiFetch(`/api/ai${path}`, {
@@ -542,7 +591,7 @@ function StudentDashboard() {
     }
   };
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       const dashResponse = await apiFetch(`/api/students/${user.id}/dashboard`);
@@ -565,7 +614,7 @@ function StudentDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (user?.id) {
@@ -580,7 +629,7 @@ function StudentDashboard() {
         socket.off("dashboard-update");
       };
     }
-  }, [user?.id]);
+  }, [load]);
 
   const enroll = async (courseId) => {
     setEnrollingId(courseId);
@@ -629,36 +678,28 @@ function StudentDashboard() {
 
   const stats = [
     {
-      icon: "📚",
+      icon: BookOpen,
       val: dashData.totalEnrolled ?? enrolled.length,
       label: "Enrolled",
-      color: "from-blue-500 to-blue-600",
-      bg: "from-blue-500/15 to-blue-600/5",
     },
     {
-      icon: "📋",
+      icon: ClipboardList,
       val: dashData.pendingAssignments ?? 0,
       label: "Pending",
-      color: "from-amber-500 to-amber-600",
-      bg: "from-amber-500/15 to-amber-600/5",
     },
     {
-      icon: "🧠",
+      icon: Brain,
       val: dashData.completedQuizzes ?? 0,
       label: "Quizzes Done",
-      color: "from-purple-500 to-purple-600",
-      bg: "from-purple-500/15 to-purple-600/5",
     },
     {
-      icon: "📹",
+      icon: Video,
       val: dashData.upcomingClasses?.length ?? 0,
       label: "Upcoming",
-      color: "from-emerald-500 to-emerald-600",
-      bg: "from-emerald-500/15 to-emerald-600/5",
     },
   ];
 
-  const chartColors = ["#818cf8", "#a78bfa", "#f472b6", "#fbbf24", "#34d399"];
+  const chartColors = ["#7cff6b", "#a78bfa", "#f472b6", "#fbbf24", "#34d399"];
 
   const tooltipStyle = {
     backgroundColor: "var(--surface)",
@@ -671,15 +712,17 @@ function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col relative overflow-hidden">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_20%,#7c3aed33,transparent_40%)]" />
+        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_80%,#22c55e33,transparent_40%)]" />
+      </div>
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 relative z-10">
         {/* Header */}
         <div className="mb-12 animate-[slide-down_0.6s_cubic-bezier(0.16,1,0.3,1)_both]">
           <div className="flex items-center gap-5 mb-2">
-            <div className="text-5xl sm:text-6xl drop-shadow-lg animate-float">
-              👋
-            </div>
+            <GraduationCap className="w-12 h-12 text-[var(--accent)] animate-float" />
             <div>
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--text)] sc-title">
                 Welcome back,{" "}
@@ -697,33 +740,56 @@ function StudentDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-          {stats.map((s, i) => (
-            <div
-              key={s.label}
-              className={`group sc-card-premium glass rounded-2xl p-6 bg-gradient-to-br ${s.bg}
-                         animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]`}
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4
-                              bg-gradient-to-br ${s.color} shadow-lg
-                              group-hover:scale-110 group-hover:rotate-[-5deg] transition-all duration-500`}
-              >
-                <span className="brightness-0 invert">{s.icon}</span>
-              </div>
-              <div
-                className="text-4xl font-extrabold text-[var(--text)] mb-1 tracking-tighter font-[var(--font-mono)]
-                              animate-[count-up_0.8s_cubic-bezier(0.16,1,0.3,1)_both]"
-                style={{ animationDelay: `${200 + i * 100}ms` }}
-              >
-                {s.val}
-              </div>
-              <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">
-                {s.label}
-              </p>
-            </div>
-          ))}
+        <div className="relative flex flex-col gap-8 mb-12">
+          {/* Top Divider */}
+          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-40" />
+
+          {/* Stats Cards */}
+          <div className="flex flex-wrap justify-center gap-8">
+            {stats.map((s) => {
+              const Icon = s.icon;
+
+              return (
+                <div
+                  key={s.label}
+                  className="
+            group relative w-[240px] h-[160px]
+            rounded-2xl
+            bg-white
+            border border-green-100
+            shadow-md
+            hover:shadow-xl
+            transition-all duration-300
+            hover:-translate-y-1
+          "
+                >
+                  {/* Soft Hover Glow */}
+                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300">
+                    <div className="absolute inset-0 bg-green-100/40" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative z-10 flex flex-col items-center justify-center h-full gap-4 text-center px-4">
+                    {/* Icon */}
+                    <div className="p-3 rounded-xl bg-green-50 group-hover:bg-green-100 transition">
+                      <Icon className="w-7 h-7 text-green-600" />
+                    </div>
+
+                    {/* Value */}
+                    <p className="text-3xl font-bold text-gray-800">{s.val}</p>
+
+                    {/* Label */}
+                    <p className="text-sm text-gray-500 font-medium">
+                      {s.label}
+                    </p>
+                  </div>
+
+                  {/* Bottom Accent Line */}
+                  <div className="absolute bottom-0 left-0 w-0 h-[3px] bg-green-500 group-hover:w-full transition-all duration-300 rounded-b-2xl" />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* AI Assistant Section */}
@@ -732,117 +798,158 @@ function StudentDashboard() {
           style={{ animationDelay: "120ms" }}
         >
           <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
-            <span className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center text-xl">
-              🤖
-            </span>
+            <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center">
+              <BrainCircuit className="w-5 h-5 text-[var(--accent)]" />
+            </div>
             AI Assistant
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              {
-                icon: "💬",
-                label: "AI Chat",
-                desc: "Ask anything educational",
-                type: "chat",
-                color: "from-blue-500/15 to-blue-600/5",
-              },
-              {
-                icon: "📅",
-                label: "Study Plan",
-                desc: "Personalized weekly schedule",
-                type: "plan",
-                color: "from-emerald-500/15 to-emerald-600/5",
-              },
-              {
-                icon: "💡",
-                label: "Explain",
-                desc: "Understand any concept",
-                type: "explain",
-                color: "from-amber-500/15 to-amber-600/5",
-              },
-              {
-                icon: "📊",
-                label: "Performance",
-                desc: "Analyze your scores",
-                type: "performance",
-                color: "from-purple-500/15 to-purple-600/5",
-              },
-            ].map((tool) => (
-              <button
-                key={tool.type}
-                onClick={() => openAiModal(tool.type)}
-                className={`group sc-card-premium glass rounded-2xl p-4 text-left bg-gradient-to-br ${tool.color} hover-lift active:scale-95 transition-all duration-300 border border-[var(--border)]/30 hover:border-[var(--accent)]/30`}
-              >
-                <div className="text-2xl mb-2">{tool.icon}</div>
-                <p className="text-sm font-extrabold text-[var(--text)] mb-0.5">
-                  {tool.label}
-                </p>
-                <p className="text-[10px] text-[var(--muted)] font-medium leading-snug">
-                  {tool.desc}
-                </p>
-              </button>
-            ))}
+          <div className="relative flex flex-col gap-8">
+            {/* Top Divider */}
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-40" />
+
+            {/* AI Tools */}
+            <div className="flex flex-wrap justify-center gap-8">
+              {[
+                {
+                  icon: MessageCircle,
+                  label: "AI Chat",
+                  desc: "Ask anything instantly",
+                  type: "chat",
+                },
+                {
+                  icon: CalendarDays,
+                  label: "Study Plan",
+                  desc: "Smart weekly planner",
+                  type: "plan",
+                },
+                {
+                  icon: Lightbulb,
+                  label: "Explain",
+                  desc: "Break down concepts",
+                  type: "explain",
+                },
+                {
+                  icon: BarChart3,
+                  label: "Performance",
+                  desc: "Analyze progress",
+                  type: "performance",
+                },
+              ].map((tool) => {
+                const Icon = tool.icon;
+
+                return (
+                  <button
+                    key={tool.type}
+                    onClick={() => openAiModal(tool.type)}
+                    className="
+            group relative w-[240px] h-[160px]
+            rounded-2xl
+            bg-white
+            border border-green-100
+            shadow-md
+            hover:shadow-xl
+            transition-all duration-300
+            hover:-translate-y-1
+          "
+                  >
+                    {/* Soft Hover Glow */}
+                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300">
+                      <div className="absolute inset-0 bg-green-100/40" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="relative z-10 flex flex-col items-center justify-center h-full gap-4 text-center px-4">
+                      {/* Icon */}
+                      <div className="p-4 rounded-xl bg-green-50 group-hover:bg-green-100 transition">
+                        <Icon className="w-7 h-7 text-green-600" />
+                      </div>
+
+                      {/* Title */}
+                      <p className="text-base font-semibold text-gray-800">
+                        {tool.label}
+                      </p>
+
+                      {/* Description */}
+                      <p className="text-sm text-gray-500">{tool.desc}</p>
+                    </div>
+
+                    {/* Bottom Accent Line */}
+                    <div className="absolute bottom-0 left-0 w-0 h-[3px] bg-green-500 group-hover:w-full transition-all duration-300 rounded-b-2xl" />
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* ── Active Quizzes ── */}
-        <div
-          className="mb-12 animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
-          style={{ animationDelay: "140ms" }}
-        >
-          <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
-            <span className="w-10 h-10 rounded-xl bg-pink-500/15 flex items-center justify-center text-xl">
-              🧠
-            </span>
-            Active Quizzes
-          </h2>
+        <div className="mb-14">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-3 text-[var(--text)]">
+              <div className="p-2 rounded-xl bg-[var(--accent)]/15 ">
+                <Brain className="w-6 h-6 text-[var(--accent)]" />
+              </div>
+              Active Quizzes
+            </h2>
+          </div>
+
           {quizzesLoading ? (
             <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
-              <span className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
               Loading quizzes…
             </div>
           ) : activeQuizzes.length === 0 ? (
-            <div className="sc-card-premium glass rounded-2xl p-8 text-center">
-              <div className="text-4xl mb-3">🎯</div>
-              <p className="text-sm font-semibold text-[var(--muted)]">
-                No active quizzes right now. Check back later!
+            <div className="bg-white border border-green-100 rounded-2xl p-10 text-center shadow-sm">
+              <Brain className="w-10 h-10 text-green-400 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">
+                No active quizzes right now
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {activeQuizzes.map((q) => (
                 <div
                   key={q.id}
-                  className="sc-card-premium glass rounded-2xl p-5 flex flex-col gap-3 border border-[var(--border)]/30 hover:border-[var(--accent)]/30 transition-all hover-lift"
+                  className="group bg-white border border-green-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-extrabold text-[var(--text)] truncate">
-                        {q.title}
-                      </p>
-                      <p className="text-xs text-[var(--muted)] mt-0.5">
-                        📚 {q.courseTitle}
-                      </p>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-lg bg-pink-500/15 text-pink-400 text-[10px] font-bold border border-pink-500/20 shrink-0">
-                      {q.questionCount ?? q.questions?.length ?? 0}Q
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-[var(--muted)]">
-                    <span>
-                      {q.timeLimit ? `⏱ ${q.timeLimit} min` : "No time limit"}
-                    </span>
-                    {q.dueDate && (
-                      <span>
-                        Due: {new Date(q.dueDate).toLocaleDateString()}
+                  {/* Top */}
+                  <div>
+                    <p className="font-semibold text-gray-800 text-lg mb-1 line-clamp-1">
+                      {q.title}
+                    </p>
+
+                    <p className="text-xs text-gray-500 mb-4">
+                      {q.courseTitle}
+                    </p>
+
+                    {/* Meta */}
+                    <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <FileText className="w-4 h-4" />
+                        {q.questionCount ?? q.questions?.length ?? 0} Q
                       </span>
-                    )}
+
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {q.timeLimit ? `${q.timeLimit} min` : "No limit"}
+                      </span>
+
+                      {q.dueDate && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(q.dueDate).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Button */}
                   <button
                     onClick={() => startQuiz(q)}
-                    className="w-full py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
+                    className="mt-6 py-3 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition active:scale-95"
                   >
-                    Take Quiz →
+                    Start Quiz →
                   </button>
                 </div>
               ))}
@@ -851,74 +958,78 @@ function StudentDashboard() {
         </div>
 
         {/* ── My Assignments ── */}
-        <div
-          className="mb-12 animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
-          style={{ animationDelay: "160ms" }}
-        >
-          <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
-            <span className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-xl">
-              📝
-            </span>
-            My Assignments
-          </h2>
+        <div className="mb-14">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-3 text-[var(--text)]">
+              <div className="p-2 rounded-xl bg-[var(--accent)]/15 ">
+                <ClipboardList className="w-6 h-6 text-[var(--accent)]" />
+              </div>
+              My Assignments
+            </h2>
+          </div>
+
           {assignmentsLoading ? (
             <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
-              <span className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
               Loading assignments…
             </div>
           ) : myAssignments.length === 0 ? (
-            <div className="sc-card-premium glass rounded-2xl p-8 text-center">
-              <div className="text-4xl mb-3">📋</div>
-              <p className="text-sm font-semibold text-[var(--muted)]">
-                No assignments yet.
-              </p>
+            <div className="bg-white border border-green-100 rounded-2xl p-10 text-center shadow-sm">
+              <ClipboardList className="w-10 h-10 text-green-400 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">No assignments yet</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {myAssignments.map((a) => {
                 const isOverdue = a.dueDate && new Date(a.dueDate) < new Date();
+
                 return (
                   <div
                     key={a.id}
-                    className="sc-card-premium glass rounded-2xl p-5 flex flex-col gap-3 border border-[var(--border)]/30 hover:border-[var(--accent)]/30 transition-all hover-lift"
+                    className="group bg-white border border-green-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-extrabold text-[var(--text)] truncate">
-                          {a.title}
-                        </p>
-                        <p className="text-xs text-[var(--muted)] mt-0.5">
-                          📚 {a.courseTitle}
-                        </p>
-                      </div>
-                      <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-400 text-[10px] font-bold border border-amber-500/20 shrink-0">
-                        {a.maxScore}pts
-                      </span>
-                    </div>
-                    {a.description && (
-                      <p className="text-xs text-[var(--muted)] line-clamp-2 leading-relaxed">
-                        {a.description}
+                    {/* Top */}
+                    <div>
+                      <p className="font-semibold text-gray-800 text-lg mb-1 line-clamp-1">
+                        {a.title}
                       </p>
-                    )}
-                    <div className="flex items-center justify-between text-xs">
-                      {a.dueDate ? (
-                        <span
-                          className={
-                            isOverdue
-                              ? "text-red-400 font-semibold"
-                              : "text-[var(--muted)]"
-                          }
-                        >
-                          {isOverdue ? "⚠ Overdue" : "Due"}:{" "}
-                          {new Date(a.dueDate).toLocaleDateString()}
-                        </span>
-                      ) : (
-                        <span className="text-[var(--muted)]">No due date</span>
+
+                      <p className="text-xs text-gray-500 mb-3">
+                        {a.courseTitle}
+                      </p>
+
+                      {a.description && (
+                        <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+                          {a.description}
+                        </p>
                       )}
+
+                      {/* Meta */}
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">{a.maxScore} pts</span>
+
+                        {a.dueDate ? (
+                          <span
+                            className={
+                              isOverdue
+                                ? "text-red-500 font-semibold"
+                                : "text-gray-500"
+                            }
+                          >
+                            {isOverdue ? "Overdue" : "Due"}:{" "}
+                            {new Date(a.dueDate).toLocaleDateString()}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">No due date</span>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Button */}
                     <button
                       onClick={() => openSubmitModal(a)}
-                      className="w-full py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
+                      className="mt-6 py-3 rounded-xl border border-green-500 text-green-600 font-semibold text-sm hover:bg-green-50 transition active:scale-95"
                     >
                       Submit / View →
                     </button>
@@ -940,7 +1051,7 @@ function StudentDashboard() {
                 style={{ animationDelay: "100ms" }}
               >
                 <h3 className="text-lg font-bold text-[var(--text)] mb-5 flex items-center gap-2.5">
-                  <span className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center text-sm">
+                  <span className="w-8 h-8 rounded-lg bg-green-500/15 flex items-center justify-center text-sm">
                     📊
                   </span>
                   Performance Trend
@@ -1093,7 +1204,7 @@ function StudentDashboard() {
                       className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${
                         lc.status === "live"
                           ? "bg-red-500/15 text-red-500 animate-pulse border border-red-500/30 shadow-[0_0_12px_rgba(239,68,68,0.2)]"
-                          : "bg-blue-500/15 text-blue-500 border border-blue-500/30"
+                          : "bg-green-500/15 text-green-500 border border-green-500/30"
                       }`}
                     >
                       {lc.status === "live" ? "🔴 LIVE" : "🗓️ Scheduled"}
@@ -1195,7 +1306,7 @@ function StudentDashboard() {
                         {
                           val: c.materialCount || 0,
                           label: "Materials",
-                          color: "blue",
+                          color: "green",
                         },
                         {
                           val: c.assignmentCount || 0,
@@ -1254,98 +1365,96 @@ function StudentDashboard() {
             className="animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]"
             style={{ animationDelay: "400ms" }}
           >
-            <div className="flex items-center justify-between mb-6">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-extrabold text-[var(--text)] flex items-center gap-3 sc-title">
-                  <span className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-xl">
+                <h2 className="text-2xl font-extrabold text-[var(--text)] flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg">
                     🌟
                   </span>
                   Explore More
                 </h2>
-                <p className="text-sm text-[var(--muted)] mt-1 font-medium ml-[52px]">
+                <p className="text-sm text-[var(--text)] mt-1 ml-[52px]">
                   Expand your skills with new courses
                 </p>
               </div>
-              <span
-                className="px-4 py-2 rounded-full glass text-emerald-500 text-xs font-bold
-                               border border-emerald-500/25"
-              >
+
+              <span className="px-4 py-2 rounded-full text-emerald-600 text-xs font-bold bg-emerald-50 border border-emerald-200">
                 {available.length} available
               </span>
             </div>
 
+            {/* Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {available.map((c, i) => (
                 <div
                   key={c.id}
-                  className="group sc-card-premium glass rounded-2xl p-6 overflow-hidden
-                           animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+                  className="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                   style={{ animationDelay: `${(enrolled.length + i) * 80}ms` }}
                 >
-                  <div
-                    className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0
-                                 group-hover:from-emerald-500/5 group-hover:to-emerald-500/0 transition-all duration-500"
-                  />
-                  <div className="relative">
-                    <div className="flex items-start justify-between mb-3 gap-3">
-                      <h3 className="text-lg font-bold text-[var(--text)] flex-1 leading-snug group-hover:text-emerald-500 transition-colors duration-300">
-                        {c.title}
-                      </h3>
-                      {c.subject && (
-                        <span
-                          className="px-3 py-1 bg-emerald-500/12 text-emerald-500 rounded-lg text-[10px] font-bold whitespace-nowrap
-                                         uppercase tracking-wider border border-emerald-500/15"
-                        >
-                          {c.subject}
-                        </span>
-                      )}
-                    </div>
+                  {/* Title + Subject */}
+                  <div className="flex items-start justify-between mb-3 gap-3">
+                    <h3 className="text-lg font-bold text-gray-800 flex-1 leading-snug group-hover:text-emerald-600 transition">
+                      {c.title}
+                    </h3>
 
-                    <p className="text-xs text-[var(--muted)] mb-3 flex items-center gap-1.5 font-medium">
-                      👨‍🏫 {c.teacher?.name || "Unknown"}
-                    </p>
-
-                    <p className="text-sm text-[var(--muted)] mb-4 leading-relaxed line-clamp-2 font-medium">
-                      {c.description ||
-                        "Explore this amazing course and expand your knowledge"}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-3 mb-5">
-                      <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/15 text-center">
-                        <p className="font-extrabold text-[var(--text)] text-lg">
-                          {c.enrollmentCount || 0}
-                        </p>
-                        <p className="text-[9px] text-[var(--muted)] font-bold uppercase tracking-wider mt-0.5">
-                          Enrolled
-                        </p>
-                      </div>
-                      <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/15 text-center">
-                        <p className="font-extrabold text-[var(--text)] text-lg">
-                          {c.materialCount || 0}
-                        </p>
-                        <p className="text-[9px] text-[var(--muted)] font-bold uppercase tracking-wider mt-0.5">
-                          Materials
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => enroll(c.id)}
-                      disabled={enrollingId === c.id}
-                      className="w-full py-3 rounded-xl text-sm font-bold border-2 cursor-pointer disabled:cursor-not-allowed transition-all duration-300
-                               bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-60 text-emerald-500 border-emerald-500/30
-                               hover:shadow-[0_8px_24px_-8px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:scale-95"
-                    >
-                      {enrollingId === c.id ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <span className="w-3.5 h-3.5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-                          Enrolling...
-                        </span>
-                      ) : (
-                        "+ Enroll Now"
-                      )}
-                    </button>
+                    {c.subject && (
+                      <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-emerald-100">
+                        {c.subject}
+                      </span>
+                    )}
                   </div>
+
+                  {/* Teacher */}
+                  <p className="text-xs text-gray-500 mb-2 font-medium">
+                    👨‍🏫 {c.teacher?.name || "Unknown"}
+                  </p>
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed line-clamp-2">
+                    {c.description ||
+                      "Explore this amazing course and expand your knowledge"}
+                  </p>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-3 mb-5">
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                      <p className="font-bold text-gray-800 text-lg">
+                        {c.enrollmentCount || 0}
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-semibold mt-0.5">
+                        Enrolled
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                      <p className="font-bold text-gray-800 text-lg">
+                        {c.materialCount || 0}
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-semibold mt-0.5">
+                        Materials
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Button */}
+                  <button
+                    onClick={() => enroll(c.id)}
+                    disabled={enrollingId === c.id}
+                    className="w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-all duration-300
+              bg-emerald-500 text-white hover:bg-emerald-600
+              disabled:opacity-60 disabled:cursor-not-allowed
+              hover:shadow-md active:scale-95"
+                  >
+                    {enrollingId === c.id ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        Enrolling...
+                      </span>
+                    ) : (
+                      "+ Enroll Now"
+                    )}
+                  </button>
                 </div>
               ))}
             </div>
@@ -1650,12 +1759,15 @@ function StudentDashboard() {
                 <div className="border-t border-[var(--border)]/30 pt-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
-                      🤖 AI Feedback
+                      <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center">
+                        <BrainCircuit className="w-5 h-5 text-[var(--accent)]" />
+                      </div>{" "}
+                      AI Feedback
                     </p>
                     <button
                       onClick={getAIFeedback}
                       disabled={aiFeedbackLoading}
-                      className="px-4 py-2 rounded-xl border border-violet-500/30 text-violet-400 text-xs font-bold hover:bg-violet-500/10 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                      className="px-4 py-2 rounded-xl border border-green-500/30 text-green-400 text-xs font-bold hover:bg-green-500/10 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
                     >
                       {aiFeedbackLoading ? (
                         <>
@@ -1669,7 +1781,7 @@ function StudentDashboard() {
                   </div>
                   {mySubmission.feedback && !aiFeedback && (
                     <div className="border border-[var(--border)]/40 rounded-xl overflow-hidden">
-                      <div className="px-4 py-2 border-b border-[var(--border)]/30 bg-violet-500/5 text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">
+                      <div className="px-4 py-2 border-b border-[var(--border)]/30 bg-green-500/5 text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">
                         Saved Feedback
                       </div>
                       <div className="p-4">
@@ -1678,9 +1790,9 @@ function StudentDashboard() {
                     </div>
                   )}
                   {aiFeedback && (
-                    <div className="border border-violet-500/30 rounded-xl overflow-hidden">
-                      <div className="px-4 py-2 border-b border-violet-500/20 bg-violet-500/5 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                    <div className="border border-green-500/30 rounded-xl overflow-hidden">
+                      <div className="px-4 py-2 border-b border-green-500/20 bg-green-500/5 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                         <span className="text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">
                           AI Analysis
                         </span>
@@ -1707,7 +1819,7 @@ function StudentDashboard() {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-[var(--border)]/30 shrink-0">
               <h3 className="text-lg font-extrabold text-[var(--text)] flex items-center gap-3">
-                <span className="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center text-lg">
+                <span className="w-9 h-9 rounded-xl bg-green-500/15 flex items-center justify-center text-lg">
                   {aiModal === "chat"
                     ? "💬"
                     : aiModal === "plan"
@@ -1732,20 +1844,32 @@ function StudentDashboard() {
             <div className="overflow-y-auto flex-1 p-5 space-y-4">
               {/* ── CHAT ── */}
               {aiModal === "chat" && (
-                <div className="flex flex-col gap-3 h-full">
-                  <div className="glass rounded-xl border border-[var(--border)]/40 min-h-[260px] max-h-[40vh] overflow-y-auto p-4 space-y-3">
+                <div className="flex flex-col h-full">
+                  {/* Chat Box */}
+                  <div className="flex-1 bg-white rounded-2xl border border-green-100 shadow-sm p-4 overflow-y-auto space-y-4">
+                    {/* Empty State */}
                     {chatHistory.length === 0 && (
-                      <p className="text-center text-[var(--muted)] text-sm mt-6">
+                      <div className="flex flex-col items-center justify-center h-full text-center text-gray-400 text-sm">
+                        <div className="text-3xl mb-2">💬</div>
                         Ask me anything about your courses…
-                      </p>
+                      </div>
                     )}
+
+                    {/* Messages */}
                     {chatHistory.map((m, i) => (
                       <div
                         key={i}
                         className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                       >
                         <div
-                          className={`max-w-[82%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${m.role === "user" ? "bg-[var(--accent)] text-white rounded-br-sm" : "glass border border-[var(--border)]/40 text-[var(--text)] rounded-bl-sm"}`}
+                          className={`
+              max-w-[75%] px-4 py-3 text-sm leading-relaxed rounded-2xl shadow-sm
+              ${
+                m.role === "user"
+                  ? "bg-green-500 text-white rounded-br-md"
+                  : "bg-gray-50 border border-gray-200 text-gray-800 rounded-bl-md"
+              }
+            `}
                         >
                           {m.role === "assistant" ? (
                             <SdAiMarkdown text={m.content} />
@@ -1755,49 +1879,62 @@ function StudentDashboard() {
                         </div>
                       </div>
                     ))}
+
+                    {/* Typing Loader */}
                     {aiLoading && (
                       <div className="flex justify-start">
-                        <div className="glass border border-[var(--border)]/40 px-4 py-3 rounded-2xl rounded-bl-sm">
-                          <span className="flex gap-1">
+                        <div className="bg-gray-50 border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
+                          <div className="flex gap-1">
                             {[0, 1, 2].map((i) => (
                               <span
                                 key={i}
-                                className="w-2 h-2 bg-[var(--accent)] rounded-full animate-bounce"
+                                className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
                                 style={{ animationDelay: `${i * 0.15}s` }}
                               />
                             ))}
-                          </span>
+                          </div>
                         </div>
                       </div>
                     )}
+
+                    {/* Error */}
                     {aiError && (
                       <p className="text-red-400 text-xs text-center">
                         {aiError}
                       </p>
                     )}
+
                     <div ref={chatBottomRef} />
                   </div>
-                  <form onSubmit={sendChat} className="flex gap-2 shrink-0">
+
+                  {/* Input Area */}
+                  <form
+                    onSubmit={sendChat}
+                    className="mt-3 flex items-center gap-2 bg-white border border-green-100 rounded-xl p-2 shadow-sm"
+                  >
                     <input
-                      className="flex-1 px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 transition-all glass text-[var(--text)] placeholder:text-[var(--muted)]/50"
+                      className="flex-1 px-3 py-2 text-sm outline-none text-gray-700 placeholder-gray-400"
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       placeholder="Ask anything educational…"
                     />
+
                     <button
                       type="submit"
                       disabled={aiLoading || !chatInput.trim()}
-                      className="px-5 py-3 rounded-xl bg-[var(--accent)] text-white font-semibold text-sm disabled:opacity-50 cursor-pointer active:scale-95 transition-all"
+                      className="px-4 py-2 rounded-lg bg-green-500 text-white font-semibold text-sm disabled:opacity-50 transition hover:bg-green-600 active:scale-95"
                     >
                       Send
                     </button>
                   </form>
+
+                  {/* Clear Button */}
                   <button
                     onClick={() => {
                       setChatHistory([]);
                       setAiError("");
                     }}
-                    className="text-xs text-[var(--muted)] hover:text-red-400 transition-colors text-right"
+                    className="text-xs text-gray-400 hover:text-red-500 transition mt-2 text-right"
                   >
                     Clear conversation
                   </button>
@@ -2156,28 +2293,28 @@ function StudentDashboard() {
 
               {/* ── PERFORMANCE ── */}
               {aiModal === "performance" && (
-                <div className="space-y-4">
-                  {/* Load real data from DB */}
-                  {perfContext &&
-                    perfContext.courses &&
-                    perfContext.courses.length > 0 && (
-                      <div className="rounded-xl border border-[var(--border)]/30 bg-[var(--accent)]/5 p-3">
-                        <p className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-2">
-                          Load Real Data From DB
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {perfContext.courses.map((c) => (
-                            <button
-                              key={c.courseId}
-                              onClick={() => loadRealPerformanceData(c)}
-                              className="px-3 py-1.5 rounded-lg border border-[var(--accent)]/30 text-xs font-semibold text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-all cursor-pointer"
-                            >
-                              {c.title}
-                            </button>
-                          ))}
-                        </div>
+                <div className="space-y-6">
+                  {/* REAL DATA */}
+                  {perfContext?.courses?.length > 0 && (
+                    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+                      <p className="text-xs font-bold text-gray-500 mb-3">
+                        Load Real Data
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {perfContext.courses.map((c) => (
+                          <button
+                            key={c.courseId}
+                            onClick={() => loadRealPerformanceData(c)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition"
+                          >
+                            {c.title}
+                          </button>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  )}
+
+                  {/* FORM */}
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -2194,130 +2331,113 @@ function StudentDashboard() {
                         course_progress: Number(perfForm.course_progress),
                       });
                     }}
-                    className="space-y-4"
+                    className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-5"
                   >
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-1.5">
-                          Subject *
-                        </label>
-                        <input
-                          className="w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 transition-all glass text-[var(--text)] placeholder:text-[var(--muted)]/50"
-                          required
-                          value={perfForm.subject}
-                          onChange={(e) =>
-                            setPerfForm((f) => ({
-                              ...f,
-                              subject: e.target.value,
-                            }))
-                          }
-                          placeholder="e.g. Data Structures"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-1.5">
-                          Course Progress (%)
-                        </label>
-                        <input
-                          type="number"
-                          min={0}
-                          max={100}
-                          className="w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 transition-all glass text-[var(--text)]"
-                          value={perfForm.course_progress}
-                          onChange={(e) =>
-                            setPerfForm((f) => ({
-                              ...f,
-                              course_progress: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-1.5">
-                          Quiz Scores (comma-separated)
-                        </label>
-                        <input
-                          className="w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 transition-all glass text-[var(--text)] placeholder:text-[var(--muted)]/50"
-                          value={perfForm.quiz_scores}
-                          onChange={(e) =>
-                            setPerfForm((f) => ({
-                              ...f,
-                              quiz_scores: e.target.value,
-                            }))
-                          }
-                          placeholder="e.g. 72, 68, 80, 85"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="block text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-1.5">
-                          Assignment Grades (comma-separated)
-                        </label>
-                        <input
-                          className="w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 transition-all glass text-[var(--text)] placeholder:text-[var(--muted)]/50"
-                          value={perfForm.assignment_grades}
-                          onChange={(e) =>
-                            setPerfForm((f) => ({
-                              ...f,
-                              assignment_grades: e.target.value,
-                            }))
-                          }
-                          placeholder="e.g. 75, 82, 88"
-                        />
-                      </div>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      Analyze Performance
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <input
+                        required
+                        value={perfForm.subject}
+                        onChange={(e) =>
+                          setPerfForm((f) => ({
+                            ...f,
+                            subject: e.target.value,
+                          }))
+                        }
+                        placeholder="Subject"
+                        className="px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
+                      />
+
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={perfForm.course_progress}
+                        onChange={(e) =>
+                          setPerfForm((f) => ({
+                            ...f,
+                            course_progress: e.target.value,
+                          }))
+                        }
+                        placeholder="Progress %"
+                        className="px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
+                      />
+
+                      <input
+                        value={perfForm.quiz_scores}
+                        onChange={(e) =>
+                          setPerfForm((f) => ({
+                            ...f,
+                            quiz_scores: e.target.value,
+                          }))
+                        }
+                        placeholder="Quiz scores (e.g. 70,80,90)"
+                        className="col-span-2 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
+                      />
+
+                      <input
+                        value={perfForm.assignment_grades}
+                        onChange={(e) =>
+                          setPerfForm((f) => ({
+                            ...f,
+                            assignment_grades: e.target.value,
+                          }))
+                        }
+                        placeholder="Assignment grades (e.g. 75,85)"
+                        className="col-span-2 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
+                      />
                     </div>
+
+                    {/* ACTIONS */}
                     <div className="flex gap-3">
                       <button
                         type="submit"
                         disabled={aiLoading || perfLoadingReal}
-                        className="flex-1 py-3 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 py-3 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition"
                       >
-                        {aiLoading ? (
-                          <>
-                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Analyzing…
-                          </>
-                        ) : (
-                          "Analyze Performance →"
-                        )}
+                        {aiLoading ? "Analyzing..." : "Analyze"}
                       </button>
+
                       {perfForm.subject && (
                         <button
                           type="button"
                           onClick={analyzeRealPerformance}
                           disabled={aiLoading || perfLoadingReal}
-                          className="px-4 py-3 rounded-xl border border-[var(--accent)]/40 text-[var(--accent)] text-sm font-bold hover:bg-[var(--accent)]/10 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2 shrink-0"
+                          className="px-4 py-3 rounded-xl border border-emerald-300 text-emerald-600 hover:bg-emerald-50 transition"
                         >
-                          {perfLoadingReal ? (
-                            <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                          ) : (
-                            "📊"
-                          )}{" "}
-                          Real Data
+                          {perfLoadingReal ? "..." : "Real Data"}
                         </button>
                       )}
                     </div>
+
                     {aiError && (
-                      <p className="text-red-400 text-sm">{aiError}</p>
-                    )}
-                    {aiResult && (
-                      <div
-                        ref={aiResultRef}
-                        className="border border-[var(--border)]/40 rounded-xl overflow-hidden"
-                      >
-                        <div className="px-4 py-2 border-b border-[var(--border)]/30 bg-green-500/5 flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                          <span className="text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">
-                            Analysis — {aiResult.subject}
-                          </span>
-                        </div>
-                        <div className="p-4 max-h-[40vh] overflow-y-auto">
-                          <SdAiMarkdown
-                            text={aiResult.analysis || JSON.stringify(aiResult)}
-                          />
-                        </div>
-                      </div>
+                      <p className="text-red-500 text-sm">{aiError}</p>
                     )}
                   </form>
+
+                  {/* RESULT */}
+                  {aiResult && (
+                    <div
+                      ref={aiResultRef}
+                      className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                    >
+                      <div className="px-5 py-3 bg-emerald-50 border-b flex items-center gap-2">
+                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-sm font-semibold text-emerald-700">
+                          {aiResult.subject} Analysis
+                        </span>
+                      </div>
+
+                      <div className="p-5 max-h-[50vh] overflow-y-auto text-sm text-gray-700">
+                        <SdAiMarkdown
+                          text={aiResult.analysis || JSON.stringify(aiResult)}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
