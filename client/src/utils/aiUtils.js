@@ -15,10 +15,10 @@ export async function post(path, body) {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const err = await res
-      .json()
-      .catch(() => ({ detail: `HTTP ${res.status}` }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(
+      err.error || err.detail || err.message || `HTTP ${res.status}`,
+    );
   }
   return res.json();
 }
