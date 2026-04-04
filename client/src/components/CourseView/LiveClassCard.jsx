@@ -12,93 +12,87 @@ function LiveClassCard({
 
   const statusMeta = isLive
     ? {
-        label: "LIVE NOW",
-        dot: "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]",
+        label: "Live",
+        color: "text-red-500",
         bg: "bg-red-500/10",
-        text: "text-red-400",
-        border: "border-red-500/25",
-        bar: "from-red-500 to-red-600",
-        icon: "📡",
-        cardBorder:
-          "border-red-500/25 shadow-[0_0_32px_-8px_rgba(239,68,68,0.15)]",
+        border: "border-red-500/20",
+        dot: "bg-red-500",
       }
     : isEnded
-      ? {
-          label: "Ended",
-          dot: "bg-[var(--muted)]/40",
-          bg: "bg-[var(--border)]/8",
-          text: "text-[var(--muted)]",
-          border: "border-[var(--border)]/18",
-          bar: "from-gray-500 to-gray-600",
-          icon: "📼",
-          cardBorder: "border-[var(--border)]/15",
-        }
-      : {
-          label: "Scheduled",
-          dot: "bg-blue-400",
-          bg: "bg-blue-500/10",
-          text: "text-blue-400",
-          border: "border-blue-500/20",
-          bar: "from-blue-500 to-indigo-600",
-          icon: "📅",
-          cardBorder:
-            "border-[var(--border)]/12 hover:border-[var(--accent)]/18",
-        };
+    ? {
+        label: "Ended",
+        color: "text-gray-400",
+        bg: "bg-gray-500/10",
+        border: "border-gray-500/20",
+        dot: "bg-gray-400",
+      }
+    : {
+        label: "Scheduled",
+        color: "text-blue-500",
+        bg: "bg-blue-500/10",
+        border: "border-blue-500/20",
+        dot: "bg-blue-500",
+      };
 
   return (
-    <div
-      className={`group glass-heavy rounded-2xl border overflow-hidden transition-all duration-400
-                   hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)] ${statusMeta.cardBorder}`}
-    >
-      {/* Status bar */}
+    <div className="group rounded-2xl border border-[var(--border)]/15 bg-[var(--card)] backdrop-blur-xl 
+                    shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+
+      {/* Top Accent Bar */}
       <div
-        className={`h-[2px] w-full bg-gradient-to-r ${statusMeta.bar} ${isLive ? "animate-pulse" : ""}`}
+        className={`h-1 w-full ${
+          isLive
+            ? "bg-gradient-to-r from-red-500 to-red-600"
+            : isScheduled
+            ? "bg-gradient-to-r from-blue-500 to-indigo-500"
+            : "bg-gradient-to-r from-gray-400 to-gray-500"
+        }`}
       />
 
-      <div className="p-5 sm:p-6 flex items-start gap-4">
+      <div className="p-6 flex gap-4">
         {/* Icon */}
         <div
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 border
-                       ${statusMeta.bg} ${statusMeta.border}
-                       ${isLive ? "animate-pulse" : "group-hover:scale-105 transition-transform duration-400"}`}
+          className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl border shrink-0
+          ${statusMeta.bg} ${statusMeta.border}`}
         >
-          {statusMeta.icon}
+          {isLive ? "📡" : isEnded ? "📼" : "📅"}
         </div>
 
+        {/* Content */}
         <div className="flex-1 min-w-0">
-          {/* Title + status */}
-          <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
-            <h4 className="text-[15px] font-bold text-[var(--text)] leading-snug">
+          {/* Title + badges */}
+          <div className="flex items-center flex-wrap gap-2 mb-2">
+            <h3 className="text-base font-semibold text-[var(--text)] leading-tight">
               {liveClass.title}
-            </h4>
+            </h3>
+
             <span
-              className={`flex items-center gap-1.5 px-2.5 py-[3px] rounded-lg text-[10px] font-black uppercase tracking-[0.1em] border
-                           ${statusMeta.bg} ${statusMeta.text} ${statusMeta.border}`}
+              className={`flex items-center gap-1 px-2 py-[2px] text-[10px] font-semibold rounded-md border
+              ${statusMeta.bg} ${statusMeta.color} ${statusMeta.border}`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full ${statusMeta.dot} ${isLive ? "animate-pulse" : ""}`}
+                className={`w-1.5 h-1.5 rounded-full ${statusMeta.dot} ${
+                  isLive ? "animate-pulse" : ""
+                }`}
               />
               {statusMeta.label}
             </span>
-            {/* Type badge */}
-            <span
-              className="flex items-center gap-1 px-2 py-[3px] rounded-lg text-[10px] font-bold
-                               bg-[var(--border)]/8 text-[var(--muted)] border border-[var(--border)]/15"
-            >
-              {isPlatform ? "🖥️ On Platform" : "🔗 External Link"}
+
+            <span className="text-[10px] px-2 py-[2px] rounded-md bg-[var(--border)]/10 border border-[var(--border)]/15 text-[var(--muted)]">
+              {isPlatform ? "Platform" : "External"}
             </span>
           </div>
 
           {/* Description */}
           {liveClass.description && (
-            <p className="text-[13px] text-[var(--muted)] mb-3 leading-relaxed line-clamp-2">
+            <p className="text-sm text-[var(--muted)] mb-3 line-clamp-2">
               {liveClass.description}
             </p>
           )}
 
-          {/* Meta pills */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-[var(--border)]/8 text-[var(--muted)] border border-[var(--border)]/12">
+          {/* Meta */}
+          <div className="flex flex-wrap gap-2 mb-4 text-xs">
+            <span className="px-3 py-1 rounded-lg bg-[var(--border)]/10 border border-[var(--border)]/15 text-[var(--muted)]">
               📅{" "}
               {new Date(liveClass.scheduledAt).toLocaleDateString("en-US", {
                 month: "short",
@@ -110,115 +104,95 @@ function LiveClassCard({
                 minute: "2-digit",
               })}
             </span>
+
             {liveClass.attendeeCount > 0 && (
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-emerald-500/8 text-emerald-400 border border-emerald-500/12">
-                👥 {liveClass.attendeeCount} attended
+              <span className="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                👥 {liveClass.attendeeCount}
               </span>
             )}
           </div>
 
-          {/* External meeting link (meetLink type only) */}
-          <div className="flex flex-wrap items-center gap-3 mb-4">
+          {/* Links */}
+          <div className="flex flex-wrap gap-3 mb-4 text-xs">
             {!isPlatform && liveClass.meetingLink && !isEnded && (
               <a
                 href={liveClass.meetingLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-bold text-[var(--accent)] hover:underline decoration-[var(--accent)]/30 underline-offset-2 transition-all"
+                className="text-[var(--accent)] hover:underline"
               >
                 🔗 Meeting Link
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  className="opacity-50"
-                >
-                  <path d="M3.75 2h3.5a.75.75 0 010 1.5H4.56l7.72 7.72a.75.75 0 11-1.06 1.06L3.5 4.56v2.69a.75.75 0 01-1.5 0v-3.5A1.75 1.75 0 013.75 2z" />
-                </svg>
               </a>
             )}
+
             {liveClass.recordingUrl && (
               <a
                 href={liveClass.recordingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-bold text-violet-400 hover:underline decoration-violet-400/30 underline-offset-2 transition-all"
+                className="text-violet-500 hover:underline"
               >
-                ▶ Watch Recording
+                ▶ Recording
               </a>
             )}
           </div>
 
           {/* Actions */}
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2">
             {isTeacher ? (
               <>
                 {isScheduled && (
                   <button
                     onClick={() => onStatusChange(liveClass.id, "live")}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-red-500/12 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-bold border border-red-500/20 cursor-pointer transition-all duration-300 active:scale-95
-                               hover:shadow-[0_8px_20px_-6px_rgba(239,68,68,0.2)]"
+                    className="px-4 py-2 text-xs font-medium rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
                   >
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                    Start Live
+                    Start
                   </button>
                 )}
-                {/* Enter classroom (platform) or end class */}
+
                 {isLive && isPlatform && (
                   <button
                     onClick={() => onJoin(liveClass.id, null)}
-                    className="flex items-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-violet-500 to-indigo-600
-                               hover:shadow-[0_12px_28px_-6px_rgba(139,92,246,0.45)]
-                               text-white rounded-xl text-xs font-black border-none cursor-pointer transition-all duration-300 active:scale-95"
+                    className="px-4 py-2 text-xs font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
                   >
-                    🖥️ Enter Classroom
+                    Enter
                   </button>
                 )}
+
                 {isLive && (
                   <button
                     onClick={() => onStatusChange(liveClass.id, "ended")}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[var(--border)]/10 hover:bg-[var(--border)]/20 text-[var(--muted)] rounded-xl text-xs font-bold border border-[var(--border)]/18 cursor-pointer transition-all duration-300 active:scale-95"
+                    className="px-4 py-2 text-xs font-medium rounded-lg border border-[var(--border)] text-[var(--muted)] hover:bg-[var(--border)]/10 transition"
                   >
-                    ⬛ End Class
+                    End
                   </button>
                 )}
+
                 <button
                   onClick={() => onDelete(liveClass.id)}
-                  className="px-5 py-2.5 bg-red-500/6 hover:bg-red-500/14 text-red-400 rounded-xl text-xs font-bold border border-red-500/15 cursor-pointer transition-all duration-300 active:scale-95"
+                  className="px-4 py-2 text-xs font-medium rounded-lg text-red-500 hover:bg-red-500/10 transition"
                 >
                   Delete
                 </button>
               </>
             ) : (
               isLive && (
-                <>
-                  {isPlatform ? (
-                    /* Platform class → navigate to the live room */
-                    <button
-                      onClick={() => onJoin(liveClass.id, null)}
-                      className="flex items-center gap-2.5 px-6 py-2.5 bg-gradient-to-r from-violet-500 to-indigo-600
-                                 hover:shadow-[0_12px_28px_-6px_rgba(139,92,246,0.45)]
-                                 text-white rounded-xl text-xs font-black border-none cursor-pointer transition-all duration-300 active:scale-95"
-                    >
-                      <span className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_6px_rgba(255,255,255,0.6)]" />
-                      Join Live Now
-                    </button>
-                  ) : (
-                    /* External meeting link → open in new tab */
-                    <button
-                      onClick={() =>
-                        onJoin(liveClass.id, liveClass.meetingLink)
-                      }
-                      className="flex items-center gap-2.5 px-6 py-2.5 bg-gradient-to-r from-red-500 to-red-600
-                                 hover:shadow-[0_12px_28px_-6px_rgba(239,68,68,0.45)]
-                                 text-white rounded-xl text-xs font-black border-none cursor-pointer transition-all duration-300 active:scale-95"
-                    >
-                      <span className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_6px_rgba(255,255,255,0.6)]" />
-                      Join Live Now
-                    </button>
-                  )}
-                </>
+                <button
+                  onClick={() =>
+                    onJoin(
+                      liveClass.id,
+                      isPlatform ? null : liveClass.meetingLink
+                    )
+                  }
+                  className={`px-5 py-2 text-xs font-semibold rounded-lg text-white transition
+                    ${
+                      isPlatform
+                        ? "bg-indigo-600 hover:bg-indigo-700"
+                        : "bg-red-500 hover:bg-red-600"
+                    }`}
+                >
+                  Join Live
+                </button>
               )
             )}
           </div>

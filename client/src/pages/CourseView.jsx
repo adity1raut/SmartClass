@@ -582,313 +582,232 @@ function CourseView() {
     students: students.length,
   };
 
-  return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#0f172a,_#020617)] text-white flex flex-col relative overflow-hidden">
-      <Navbar showBack />
+ return (
+  <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+    <Navbar showBack />
 
-      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* Course Header Banner */}
-        <CourseHeader
-          course={course}
-          materials={materials}
-          assignments={assignments}
-          quizzes={quizzes}
-          liveClasses={liveClasses}
-          isTeacher={isTeacher}
-          matProgress={matProgress}
-        />
+    <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      {/* Header */}
+      <CourseHeader
+        course={course}
+        materials={materials}
+        assignments={assignments}
+        quizzes={quizzes}
+        liveClasses={liveClasses}
+        isTeacher={isTeacher}
+        matProgress={matProgress}
+      />
 
-        {/* Two-column layout: Left Sidebar + Content */}
-        <div className="flex gap-5 items-start">
-          {/* ── LEFT SIDEBAR ── */}
-          <aside
-            className="hidden md:flex flex-col w-52 shrink-0 sticky top-4
-                            animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
-            style={{ top: "1rem" }}
+      {/* Layout */}
+      <div className="flex gap-6 items-start">
+        {/* ── SIDEBAR ── */}
+       <aside className="hidden md:flex flex-col w-64 shrink-0 sticky top-6 self-start">
+  <div className="rounded-2xl border border-[var(--border)]/15 bg-[var(--surface)]/80 backdrop-blur-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.25)] overflow-hidden">
+
+    {/* Header */}
+    <div className="px-5 py-5 border-b border-[var(--border)]/15 bg-[var(--bg)]/60 backdrop-blur-md">
+      <p className="text-[10px] uppercase tracking-widest text-[var(--muted)] font-medium mb-1">
+        Course
+      </p>
+      <p className="text-sm font-semibold text-[var(--text)] truncate">
+        {course.title}
+      </p>
+    </div>
+
+    {/* Tabs */}
+    <div className="p-2.5 space-y-1.5">
+      {tabs.map((t) => {
+        const meta = TAB_META[t];
+        const isActive = tab === t;
+
+        return (
+          <button
+            key={t}
+            onClick={() => navigate(`/course/${id}/${t}`)}
+            className={`group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200
+            ${
+              isActive
+                ? "bg-[var(--accent)]/12 text-[var(--accent)] border border-[var(--accent)]/20"
+                : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--border)]/10"
+            }`}
           >
-            {/* Sidebar nav card */}
-            <div className="glass-dark rounded-2xl overflow-hidden border border-white/5 shadow-2xl glow">
-              {/* Sidebar header */}
-              <div className="px-4 py-4 border-b border-white/5 bg-gradient-to-r from-[#7CFF4F]/10 to-transparent">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                  Course Content
-                </p>
-                <p className="text-sm font-semibold text-white truncate">
-                  {course.title}
-                </p>
-              </div>
+            {/* Icon */}
+            <span
+              className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-all
+              ${
+                isActive
+                  ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                  : "bg-[var(--border)]/10 group-hover:bg-[var(--border)]/20"
+              }`}
+            >
+              {meta.icon}
+            </span>
 
-              {/* Tab buttons */}
-              <div className="p-2">
-                {tabs.map((t) => {
-                  const meta = TAB_META[t];
-                  const isActive = tab === t;
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => navigate(`/course/${id}/${t}`)}
-                      className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl
-text-sm font-semibold transition-all duration-300 cursor-pointer mb-1 relative overflow-hidden
-${
-  isActive
-    ? "text-[#7CFF4F] bg-[#7CFF4F]/10 glow"
-    : "text-gray-400 hover:text-white hover:bg-white/5"
-}`}
-                      style={
-                        isActive
-                          ? {
-                              background:
-                                "linear-gradient(90deg, var(--accent)/12%, var(--accent)/4%)",
-                              boxShadow: "inset 3px 0 0 var(--accent)",
-                            }
-                          : {}
-                      }
-                    >
-                      {/* Hover bg */}
-                      {!isActive && (
-                        <span className="absolute inset-0 rounded-xl bg-[var(--border)]/0 group-hover:bg-[var(--border)]/12 transition-all duration-200" />
-                      )}
+            {/* Label */}
+            <span className="flex-1 text-left text-xs font-medium truncate">
+              {meta.label}
+            </span>
 
-                      {/* Icon */}
-                      <span
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all
-  ${
-    isActive
-      ? "bg-[#7CFF4F]/20 text-[#7CFF4F]"
-      : "bg-white/5 group-hover:bg-white/10"
-  }`}
-                      >
-                        {meta.icon}
-                      </span>
+            {/* Count */}
+            <span
+              className={`text-[10px] font-medium px-2 py-[2px] rounded-md transition-all
+              ${
+                isActive
+                  ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                  : "bg-[var(--border)]/20 text-[var(--muted)] group-hover:bg-[var(--border)]/30"
+              }`}
+            >
+              {tabCount[t]}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  </div>
+</aside>
 
-                      {/* Label */}
-                      <span className="relative flex-1 text-left text-xs font-bold truncate">
-                        {meta.label}
-                      </span>
+        {/* ── MAIN CONTENT ── */}
+        <div className="flex-1 min-w-0 space-y-5">
+          
+          {/* Mobile Tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-2 md:hidden">
+            {tabs.map((t) => {
+              const meta = TAB_META[t];
+              const isActive = tab === t;
 
-                      {/* Count badge */}
-                      <span
-                        className={`relative text-[10px] font-black px-2 py-0.5 rounded-lg shrink-0 transition-all duration-200
-                                        ${
-                                          isActive
-                                            ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                                            : "bg-[var(--border)]/20 text-[var(--muted)] group-hover:bg-[var(--border)]/30"
-                                        }`}
-                      >
-                        {tabCount[t]}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              return (
+                <button
+                  key={t}
+                  onClick={() => navigate(`/course/${id}/${t}`)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all duration-200
+                  ${
+                    isActive
+                      ? "bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20"
+                      : "text-[var(--muted)] border border-[var(--border)]/20 hover:bg-[var(--border)]/10"
+                  }`}
+                >
+                  {meta.icon}
+                  {meta.label}
+                  <span className="text-[9px] px-1 rounded bg-[var(--border)]/20">
+                    {tabCount[t]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-              {/* Progress strip for students */}
-              {!isTeacher && materials.length > 0 && (
-                <div className="px-4 py-3 border-t border-[var(--border)]/15">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">
-                      Progress
-                    </span>
-                    <span className="text-xs font-black text-[var(--accent)]">
-                      {matProgress}%
-                    </span>
-                  </div>
-                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#7CFF4F] to-lime-400 rounded-full transition-all duration-700 shadow-[0_0_10px_#7CFF4F]"
-                      style={{ width: `${matProgress}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-[var(--muted)]/70 mt-1.5 font-medium">
-                    {completedMats.size}/{materials.length} materials done
-                  </p>
-                </div>
+          {/* Content */}
+          <div className="rounded-[2rem] border border-[var(--border)]/20 bg-[var(--surface)] p-6 shadow-[0_24px_64px_-40px_rgba(15,23,42,0.45)]">
+            <div key={tab} className="animate-[fadeIn_0.25s_ease]">
+              
+              {tab === "materials" && (
+                <MaterialsTab
+                  materials={materials}
+                  isTeacher={isTeacher}
+                  completedMats={completedMats}
+                  onToggleComplete={toggleComplete}
+                  onDelete={deleteMaterial}
+                  onAddClick={() => setModal("material")}
+                />
               )}
 
-              {/* Quick stats for teacher */}
-              {isTeacher && (
-                <div className="px-4 py-2 rounded-xl bg-[#7CFF4F] text-black font-semibold glow-hover transition-all duration-300">
-                  <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-2">
-                    Overview
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      {
-                        label: "Students",
-                        val: course.enrollmentCount || 0,
-                        color: "text-emerald-400",
-                      },
-                      {
-                        label: "Materials",
-                        val: materials.length,
-                        color: "text-emerald-400",
-                      },
-                      {
-                        label: "Quizzes",
-                        val: quizzes.length,
-                        color: "text-pink-400",
-                      },
-                      {
-                        label: "Live",
-                        val: liveClasses.length,
-                        color: "text-red-400",
-                      },
-                    ].map((s) => (
-                      <div
-                        key={s.label}
-                        className="glass-dark rounded-2xl p-6 border border-white/10 shadow-2xl glow"
-                      >
-                        <p className={`text-sm font-black ${s.color}`}>
-                          {s.val}
-                        </p>
-                        <p className="text-[8px] font-bold text-[var(--muted)] uppercase tracking-wider">
-                          {s.label}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              {tab === "assignments" && (
+                <AssignmentsTab
+                  assignments={assignments}
+                  isTeacher={isTeacher}
+                  mySubmissions={mySubmissions}
+                  expandedSubs={expandedSubs}
+                  submissionText={submissionText}
+                  onSubmit={submitAssignment}
+                  onToggleSubs={toggleSubs}
+                  onDelete={deleteAssignment}
+                  onGrade={(subId, score, feedback) => {
+                    setGradingSubId(subId);
+                    setGradeForm({
+                      score: score ?? "",
+                      feedback: feedback ?? "",
+                    });
+                  }}
+                  onAddClick={() => setModal("assignment")}
+                />
               )}
-            </div>
-          </aside>
 
-          {/* ── MAIN CONTENT ── */}
-          <div className="flex-1 min-w-0 space-y-5">
-            {/* Mobile tab selector */}
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 md:hidden scrollbar-hide">
-              {tabs.map((t) => {
-                const meta = TAB_META[t];
-                const isActive = tab === t;
-                return (
-                  <button
-                    key={t}
-                    onClick={() => navigate(`/course/${id}/${t}`)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl whitespace-nowrap
-                                text-xs font-bold transition-all duration-200 cursor-pointer shrink-0
-                                ${
-                                  isActive
-                                    ? "bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20"
-                                    : "glass border border-[var(--border)]/20 text-[var(--muted)] hover:text-[var(--text)]"
-                                }`}
-                  >
-                    <span>{meta.icon}</span>
-                    <span>{meta.label}</span>
-                    <span
-                      className={`text-[9px] font-black px-1 py-0.5 rounded ${isActive ? "bg-[var(--accent)]/20 text-[var(--accent)]" : "bg-[var(--border)]/20 text-[var(--muted)]"}`}
-                    >
-                      {tabCount[t]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+              {tab === "quizzes" && (
+                <QuizzesTab
+                  quizzes={quizzes}
+                  isTeacher={isTeacher}
+                  onDelete={deleteQuiz}
+                  onAddClick={() => setModal("quiz")}
+                />
+              )}
 
-            {/* Tab content */}
-            <div className="glass-dark rounded-2xl p-5 border border-white/5 shadow-xl glow animate-fade-in">
-              <div className="animate-[fade-in_0.3s_ease_both]" key={tab}>
-                {tab === "materials" && (
-                  <MaterialsTab
-                    materials={materials}
-                    isTeacher={isTeacher}
-                    completedMats={completedMats}
-                    onToggleComplete={toggleComplete}
-                    onDelete={deleteMaterial}
-                    onAddClick={() => setModal("material")}
-                  />
-                )}
-                {tab === "assignments" && (
-                  <AssignmentsTab
-                    assignments={assignments}
-                    isTeacher={isTeacher}
-                    mySubmissions={mySubmissions}
-                    expandedSubs={expandedSubs}
-                    submissionText={submissionText}
-                    onSubmit={submitAssignment}
-                    onToggleSubs={toggleSubs}
-                    onDelete={deleteAssignment}
-                    onGrade={(subId, score, feedback) => {
-                      setGradingSubId(subId);
-                      setGradeForm({
-                        score: score ?? "",
-                        feedback: feedback ?? "",
-                      });
-                    }}
-                    onAddClick={() => setModal("assignment")}
-                  />
-                )}
-                {tab === "quizzes" && (
-                  <QuizzesTab
-                    quizzes={quizzes}
-                    isTeacher={isTeacher}
-                    onDelete={deleteQuiz}
-                    onAddClick={() => setModal("quiz")}
-                  />
-                )}
-                {tab === "live-classes" && (
-                  <LiveClassesTab
-                    liveClasses={liveClasses}
-                    isTeacher={isTeacher}
-                    onStatusChange={setClassStatus}
-                    onDelete={deleteLiveClass}
-                    onJoin={joinClass}
-                    onAddClick={() => setModal("live-class")}
-                  />
-                )}
-                {tab === "students" && isTeacher && (
-                  <StudentsTab students={students} />
-                )}
-              </div>
+              {tab === "live-classes" && (
+                <LiveClassesTab
+                  liveClasses={liveClasses}
+                  isTeacher={isTeacher}
+                  onStatusChange={setClassStatus}
+                  onDelete={deleteLiveClass}
+                  onJoin={joinClass}
+                  onAddClick={() => setModal("live-class")}
+                />
+              )}
+
+              {tab === "students" && isTeacher && (
+                <StudentsTab students={students} />
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      <Footer />
-
-      <GradeModal
-        isOpen={!!gradingSubId}
-        gradeForm={gradeForm}
-        onSubmit={gradeSubmission}
-        onClose={() => {
-          setGradingSubId(null);
-          setGradeForm({ score: "", feedback: "" });
-        }}
-        onChange={setGradeForm}
-      />
-      <MaterialModal
-        isOpen={modal === "material"}
-        form={matForm}
-        saving={saving}
-        onSubmit={saveMaterial}
-        onClose={() => setModal(null)}
-        onChange={setMatForm}
-      />
-      <AssignmentModal
-        isOpen={modal === "assignment"}
-        form={assForm}
-        saving={saving}
-        onSubmit={saveAssignment}
-        onClose={() => setModal(null)}
-        onChange={setAssForm}
-      />
-      <QuizModal
-        isOpen={modal === "quiz"}
-        form={quizForm}
-        saving={saving}
-        onSubmit={saveQuiz}
-        onClose={() => setModal(null)}
-        onChange={setQuizForm}
-      />
-      <LiveClassModal
-        isOpen={modal === "live-class"}
-        form={lcForm}
-        saving={saving}
-        onSubmit={saveLiveClass}
-        onClose={() => setModal(null)}
-        onChange={setLcForm}
-      />
     </div>
-  );
+
+    <Footer />
+
+    {/* Modals untouched */}
+    <GradeModal
+      isOpen={!!gradingSubId}
+      gradeForm={gradeForm}
+      onSubmit={gradeSubmission}
+      onClose={() => {
+        setGradingSubId(null);
+        setGradeForm({ score: "", feedback: "" });
+      }}
+      onChange={setGradeForm}
+    />
+    <MaterialModal
+      isOpen={modal === "material"}
+      form={matForm}
+      saving={saving}
+      onSubmit={saveMaterial}
+      onClose={() => setModal(null)}
+      onChange={setMatForm}
+    />
+    <AssignmentModal
+      isOpen={modal === "assignment"}
+      form={assForm}
+      saving={saving}
+      onSubmit={saveAssignment}
+      onClose={() => setModal(null)}
+      onChange={setAssForm}
+    />
+    <QuizModal
+      isOpen={modal === "quiz"}
+      form={quizForm}
+      saving={saving}
+      onSubmit={saveQuiz}
+      onClose={() => setModal(null)}
+      onChange={setQuizForm}
+    />
+    <LiveClassModal
+      isOpen={modal === "live-class"}
+      form={lcForm}
+      saving={saving}
+      onSubmit={saveLiveClass}
+      onClose={() => setModal(null)}
+      onChange={setLcForm}
+    />
+  </div>
+);
 }
 
 export default CourseView;

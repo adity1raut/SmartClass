@@ -1090,352 +1090,200 @@ export default function LiveClassRoom() {
         </div>
 
         {/* ═══ SIDEBAR PANEL ════════════════════════════════════════════════════ */}
-        <aside className="w-80 flex flex-col border-l border-[var(--border)]/20 glass-heavy shrink-0">
-          {/* Tabs */}
-          <div className="flex border-b border-[var(--border)]/20 shrink-0">
-            {[
-              { key: "chat", label: "💬 Chat", badge: comments.length },
-              {
-                key: "qa",
-                label: "❓ Q&A",
-                badge: questions.filter((q) => !q.isAnswered).length,
-              },
-              { key: "people", label: "👥 People", badge: handCount || null },
-            ].map(({ key, label, badge }) => (
-              <button
-                key={key}
-                onClick={() => setPanelTab(key)}
-                className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wide transition-colors cursor-pointer
-                            ${
-                              panelTab === key
-                                ? "text-[var(--accent)] border-b-2 border-[var(--accent)]"
-                                : "text-[var(--muted)] hover:text-[var(--text)]"
-                            }`}
-              >
-                {label}
-                {badge > 0 && (
-                  <span className="ml-1 text-[9px] font-black opacity-60">
-                    ({badge})
-                  </span>
-                )}
-              </button>
-            ))}
+        <aside className="w-80 flex flex-col shrink-0 border-l border-[var(--border)]/15 bg-[var(--surface)]/80 backdrop-blur-xl">
+
+  {/* Tabs */}
+  <div className="p-2 border-b border-[var(--border)]/15">
+    <div className="flex bg-[var(--border)]/10 rounded-xl p-1">
+      {[
+        { key: "chat", label: "💬 Chat", badge: comments.length },
+        {
+          key: "qa",
+          label: "❓ Q&A",
+          badge: questions.filter((q) => !q.isAnswered).length,
+        },
+        { key: "people", label: "👥", badge: handCount || null },
+      ].map(({ key, label, badge }) => (
+        <button
+          key={key}
+          onClick={() => setPanelTab(key)}
+          className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[11px] font-medium transition-all
+          ${
+            panelTab === key
+              ? "bg-[var(--surface)] shadow-sm text-[var(--text)]"
+              : "text-[var(--muted)] hover:text-[var(--text)]"
+          }`}
+        >
+          {label}
+          {badge > 0 && (
+            <span className="text-[9px] px-1.5 rounded bg-[var(--border)]/20">
+              {badge}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {/* ── CHAT ── */}
+  {panelTab === "chat" && (
+    <>
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+        {topLevel.length === 0 && (
+          <div className="h-full flex flex-col items-center justify-center opacity-40">
+            <span className="text-3xl">💬</span>
+            <p className="text-xs text-[var(--muted)] mt-2">
+              No messages yet
+            </p>
           </div>
+        )}
 
-          {/* ── Chat ── */}
-          {panelTab === "chat" && (
-            <>
-              <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
-                {topLevel.length === 0 && (
-                  <div className="flex flex-col items-center justify-center h-full gap-2 opacity-40">
-                    <span className="text-3xl">💬</span>
-                    <p className="text-xs text-[var(--muted)]">
-                      No messages yet
-                    </p>
-                  </div>
-                )}
-                {topLevel.map((c) => {
-                  const replies = getReplies(c.id);
-                  return (
-                    <div key={c.id}>
-                      <div className="flex gap-2">
-                        <Avatar name={c.user?.name || "?"} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-baseline gap-1.5 mb-0.5 flex-wrap">
-                            <span className="text-[12px] font-bold text-[var(--text)]">
-                              {c.user?.name}
-                            </span>
-                            {c.isTeacherReply && (
-                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20">
-                                Teacher
-                              </span>
-                            )}
-                            <span className="text-[10px] text-[var(--muted)]/50">
-                              {timeAgo(c.createdAt)}
-                            </span>
-                          </div>
-                          <p className="text-[13px] text-[var(--text)]/85 leading-snug break-words">
-                            {c.text}
-                          </p>
-                          <button
-                            onClick={() =>
-                              setReplyTo(
-                                replyTo?.id === c.id
-                                  ? null
-                                  : { id: c.id, userName: c.user?.name },
-                              )
-                            }
-                            className="mt-1 text-[10px] font-bold text-[var(--muted)]/50 hover:text-[var(--accent)] transition-colors cursor-pointer"
-                          >
-                            ↩ Reply
-                          </button>
-                        </div>
-                      </div>
-                      {replies.length > 0 && (
-                        <div className="ml-9 mt-2 pl-3 border-l-2 border-[var(--accent)]/20 space-y-2">
-                          {replies.map((r) => (
-                            <div key={r.id} className="flex gap-2">
-                              <Avatar name={r.user?.name || "?"} />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline gap-1.5 mb-0.5 flex-wrap">
-                                  <span className="text-[11px] font-bold text-[var(--text)]">
-                                    {r.user?.name}
-                                  </span>
-                                  {r.isTeacherReply && (
-                                    <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20">
-                                      Teacher
-                                    </span>
-                                  )}
-                                  <span className="text-[10px] text-[var(--muted)]/50">
-                                    {timeAgo(r.createdAt)}
-                                  </span>
-                                </div>
-                                <p className="text-[12px] text-[var(--text)]/80 leading-snug break-words">
-                                  {r.text}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                <div ref={chatEndRef} />
-              </div>
+        {topLevel.map((c) => {
+          const replies = getReplies(c.id);
 
-              {replyTo && (
-                <div className="mx-3 mb-1 flex items-center justify-between px-3 py-1.5 rounded-xl bg-[var(--accent)]/8 border border-[var(--accent)]/15 text-[11px]">
-                  <span className="text-[var(--muted)]">
-                    Replying to{" "}
-                    <span className="font-bold text-[var(--accent)]">
-                      {replyTo.userName}
+          return (
+            <div key={c.id} className="space-y-2">
+              <div className="flex gap-2">
+                <Avatar name={c.user?.name || "?"} />
+
+                <div className="flex-1">
+                  {/* Header */}
+                  <div className="flex items-center gap-2 text-[11px]">
+                    <span className="font-semibold text-[var(--text)]">
+                      {c.user?.name}
                     </span>
-                  </span>
-                  <button
-                    onClick={() => setReplyTo(null)}
-                    className="text-[var(--muted)] hover:text-[var(--text)] cursor-pointer text-base leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
 
-              <form
-                onSubmit={postComment}
-                className="p-3 border-t border-[var(--border)]/15 flex gap-2 shrink-0"
-              >
-                <input
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder={
-                    replyTo
-                      ? `Reply to ${replyTo.userName}…`
-                      : "Send a message…"
-                  }
-                  className="flex-1 px-3 py-2 rounded-xl text-sm outline-none border border-[var(--border)]/30 focus:border-[var(--accent)] glass-heavy text-[var(--text)] placeholder:text-[var(--muted)]/40 transition-colors"
-                />
-                <button
-                  type="submit"
-                  disabled={!commentText.trim()}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-contrast)] disabled:opacity-40 cursor-pointer shrink-0"
-                >
-                  ↑
-                </button>
-              </form>
-            </>
-          )}
-
-          {/* ── Q&A ── */}
-          {panelTab === "qa" && (
-            <>
-              <div className="flex-1 overflow-y-auto p-3 space-y-2.5 min-h-0">
-                {questions.length === 0 && (
-                  <div className="flex flex-col items-center justify-center h-full gap-2 opacity-40">
-                    <span className="text-3xl">❓</span>
-                    <p className="text-xs text-[var(--muted)]">
-                      No questions yet
-                    </p>
-                  </div>
-                )}
-                {questions.map((q) => (
-                  <div
-                    key={q.id}
-                    className={`p-3 rounded-2xl border ${
-                      q.isAnswered
-                        ? "bg-emerald-500/6 border-emerald-500/15"
-                        : "bg-[var(--border)]/6 border-[var(--border)]/15"
-                    }`}
-                  >
-                    <div className="flex gap-2">
-                      <Avatar name={q.student?.name || "?"} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                          <span className="text-[12px] font-bold text-[var(--text)]">
-                            {q.student?.name}
-                          </span>
-                          {q.isAnswered && (
-                            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-                              Answered
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[13px] text-[var(--text)]/85 leading-snug break-words">
-                          {q.question}
-                        </p>
-                      </div>
-                    </div>
-                    {isTeacher && !q.isAnswered && (
-                      <div className="flex gap-3 mt-2 ml-9">
-                        <button
-                          onClick={() => markAnswered(q.id)}
-                          className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 cursor-pointer transition-colors"
-                        >
-                          ✓ Mark answered
-                        </button>
-                        <button
-                          onClick={() => {
-                            setPanelTab("chat");
-                            setCommentText(`@${q.student?.name} `);
-                          }}
-                          className="text-[11px] font-bold text-[var(--muted)]/60 hover:text-[var(--accent)] cursor-pointer transition-colors"
-                        >
-                          ↩ Reply in chat
-                        </button>
-                      </div>
+                    {c.isTeacherReply && (
+                      <span className="px-1.5 py-[2px] text-[9px] rounded bg-[var(--accent)]/15 text-[var(--accent)]">
+                        Teacher
+                      </span>
                     )}
+
+                    <span className="text-[var(--muted)]/50">
+                      {timeAgo(c.createdAt)}
+                    </span>
                   </div>
-                ))}
-              </div>
-              {!isTeacher && (
-                <form
-                  onSubmit={postQuestion}
-                  className="p-3 border-t border-[var(--border)]/15 flex gap-2 shrink-0"
-                >
-                  <input
-                    value={questionText}
-                    onChange={(e) => setQuestionText(e.target.value)}
-                    placeholder="Ask a question…"
-                    className="flex-1 px-3 py-2 rounded-xl text-sm outline-none border border-[var(--border)]/30 focus:border-[var(--accent)] glass-heavy text-[var(--text)] placeholder:text-[var(--muted)]/40 transition-colors"
-                  />
+
+                  {/* Message bubble */}
+                  <div className="mt-1 px-3 py-2 rounded-xl bg-[var(--border)]/10 text-[13px] text-[var(--text)]/90 leading-snug">
+                    {c.text}
+                  </div>
+
                   <button
-                    type="submit"
-                    disabled={!questionText.trim()}
-                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-contrast)] disabled:opacity-40 cursor-pointer shrink-0"
+                    onClick={() =>
+                      setReplyTo(
+                        replyTo?.id === c.id
+                          ? null
+                          : { id: c.id, userName: c.user?.name }
+                      )
+                    }
+                    className="mt-1 text-[10px] text-[var(--muted)] hover:text-[var(--accent)]"
                   >
-                    ↑
+                    Reply
                   </button>
-                </form>
-              )}
-            </>
-          )}
-
-          {/* ── People ── */}
-          {panelTab === "people" && (
-            <div className="flex-1 overflow-y-auto p-4 space-y-5 min-h-0">
-              {/* Host */}
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]/50 mb-2">
-                  Host
-                </p>
-                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--accent)]/6 border border-[var(--accent)]/15">
-                  <Avatar name={liveClass.teacher?.name || "T"} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-[var(--text)] truncate">
-                      {liveClass.teacher?.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      {isTeacher && cameraOn && (
-                        <span className="text-[10px] text-emerald-400 font-bold">
-                          📷 on
-                        </span>
-                      )}
-                      {isTeacher && micOn && (
-                        <span className="text-[10px] text-emerald-400 font-bold">
-                          🎤 on
-                        </span>
-                      )}
-                      {isTeacher && screenSharing && (
-                        <span className="text-[10px] text-blue-400 font-bold">
-                          🖥️ sharing
-                        </span>
-                      )}
-                      {isTeacher && isRecording && (
-                        <span className="text-[10px] text-red-400 font-bold animate-pulse">
-                          ⏺ rec
-                        </span>
-                      )}
-                    </div>
-                  </div>
                 </div>
               </div>
 
-              {/* Raised hands */}
-              {handCount > 0 && (
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-400/70 mb-2">
-                    ✋ Raised Hands ({handCount})
-                  </p>
-                  <div className="space-y-1.5">
-                    {Object.entries(raisedHands).map(([uid, name]) => (
-                      <div
-                        key={uid}
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/8 border border-amber-500/15"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Avatar name={name} />
-                          <span className="text-[12px] font-bold text-[var(--text)]">
-                            {name}
-                          </span>
+              {/* Replies */}
+              {replies.length > 0 && (
+                <div className="ml-8 space-y-2 border-l border-[var(--border)]/20 pl-3">
+                  {replies.map((r) => (
+                    <div key={r.id} className="flex gap-2">
+                      <Avatar name={r.user?.name || "?"} />
+                      <div className="flex-1">
+                        <p className="text-[11px] font-medium">
+                          {r.user?.name}
+                        </p>
+                        <div className="mt-1 px-3 py-2 rounded-lg bg-[var(--border)]/8 text-[12px]">
+                          {r.text}
                         </div>
-                        {isTeacher && (
-                          <button
-                            onClick={() => {
-                              socket.emit("lower-hand", {
-                                liveClassId: id,
-                                userId: uid,
-                              });
-                              setRaisedHands((p) => {
-                                const n = { ...p };
-                                delete n[uid];
-                                return n;
-                              });
-                            }}
-                            className="text-[10px] text-[var(--muted)] hover:text-red-400 cursor-pointer transition-colors font-bold"
-                          >
-                            Lower ↓
-                          </button>
-                        )}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               )}
-
-              {/* Participant count */}
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]/50 mb-2">
-                  Students · {participantCount}
-                </p>
-                <p className="text-[12px] text-[var(--muted)]/60 leading-relaxed">
-                  {participantCount}{" "}
-                  {participantCount === 1 ? "person has" : "people have"} joined
-                  this session.
-                </p>
-                {liveClass.recordingUrl && (
-                  <a
-                    href={liveClass.recordingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 text-[12px] font-bold hover:bg-violet-500/18 transition-colors"
-                  >
-                    ▶ Class Recording
-                  </a>
-                )}
-              </div>
             </div>
+          );
+        })}
+      </div>
+
+      {/* Input */}
+      <form
+        onSubmit={postComment}
+        className="p-3 border-t border-[var(--border)]/15 flex gap-2"
+      >
+        <input
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          placeholder="Send a message…"
+          className="flex-1 px-3 py-2 rounded-xl text-sm border border-[var(--border)]/25 bg-transparent focus:border-[var(--accent)] outline-none"
+        />
+        <button
+          type="submit"
+          disabled={!commentText.trim()}
+          className="w-9 h-9 rounded-xl bg-[var(--accent)] text-white flex items-center justify-center disabled:opacity-40"
+        >
+          ↑
+        </button>
+      </form>
+    </>
+  )}
+
+  {/* ── Q&A ── */}
+  {panelTab === "qa" && (
+    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      {questions.map((q) => (
+        <div
+          key={q.id}
+          className={`p-4 rounded-xl border ${
+            q.isAnswered
+              ? "bg-emerald-500/10 border-emerald-500/20"
+              : "bg-[var(--border)]/10 border-[var(--border)]/15"
+          }`}
+        >
+          <p className="text-[13px] font-medium">{q.question}</p>
+
+          {q.isAnswered && (
+            <span className="text-[10px] text-emerald-400 mt-1 inline-block">
+              Answered
+            </span>
           )}
-        </aside>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* ── PEOPLE ── */}
+  {panelTab === "people" && (
+    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+
+      {/* Host */}
+      <div>
+        <p className="text-[10px] uppercase text-[var(--muted)] mb-2">
+          Host
+        </p>
+
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--border)]/10 border border-[var(--border)]/15">
+          <Avatar name={liveClass.teacher?.name || "T"} />
+          <p className="text-[13px] font-semibold">
+            {liveClass.teacher?.name}
+          </p>
+        </div>
+      </div>
+
+      {/* Participants */}
+      <div>
+        <p className="text-[10px] uppercase text-[var(--muted)] mb-2">
+          Participants · {participantCount}
+        </p>
+
+        <p className="text-[12px] text-[var(--muted)]">
+          {participantCount} people joined
+        </p>
+      </div>
+    </div>
+  )}
+</aside>
       </div>
     </div>
   );
