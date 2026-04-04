@@ -9,6 +9,8 @@ vi.mock("../app/services/socketService.js", () => ({
     to: vi.fn(() => ({ emit: vi.fn() })),
     emit: vi.fn(),
   })),
+  emitToCourse: vi.fn(),
+  emitToUser: vi.fn(),
 }));
 
 vi.mock("../app/config/NodeMailer.js", () => ({
