@@ -597,10 +597,11 @@ function TeacherDashboard() {
     );
   };
 
-  const load = useCallback(() =>
-    apiFetch(`/api/teachers/${user.id}/dashboard`)
-      .then((r) => r.json())
-      .then((d) => !d.error && setData(d)),
+  const load = useCallback(
+    () =>
+      apiFetch(`/api/teachers/${user.id}/dashboard`)
+        .then((r) => r.json())
+        .then((d) => !d.error && setData(d)),
     [user.id],
   );
 

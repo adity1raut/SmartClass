@@ -442,7 +442,6 @@ export default function LiveClassRoom() {
     [id, user.id, commentText, replyTo],
   );
 
-
   // Mount pending screen stream once remoteScreenRef is available
   useEffect(() => {
     if (
