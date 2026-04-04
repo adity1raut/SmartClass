@@ -592,7 +592,11 @@ function CourseView() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+=======
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col transition-colors duration-300">
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
       <Navbar showBack />
 
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -607,6 +611,7 @@ function CourseView() {
           matProgress={matProgress}
         />
 
+<<<<<<< HEAD
         {/* Layout */}
         <div className="flex gap-6 items-start">
           {/* ── SIDEBAR ── */}
@@ -616,6 +621,22 @@ function CourseView() {
               <div className="px-5 py-5 border-b border-[var(--border)]/15 bg-[var(--bg)]/60 backdrop-blur-md">
                 <p className="text-[10px] uppercase tracking-widest text-[var(--muted)] font-medium mb-1">
                   Course
+=======
+        {/* Two-column layout: Left Sidebar + Content */}
+        <div className="flex gap-5 items-start">
+          {/* ── LEFT SIDEBAR ── */}
+          <aside
+            className="hidden md:flex flex-col w-52 shrink-0 sticky top-4
+                            animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+            style={{ top: "1rem" }}
+          >
+            {/* Sidebar nav card */}
+            <div className="rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-lg">
+              {/* Sidebar header */}
+              <div className="px-4 py-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--accent)]/8 to-transparent">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                  Course Content
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                 </p>
                 <p className="text-sm font-semibold text-[var(--text)] truncate">
                   {course.title}
@@ -632,6 +653,7 @@ function CourseView() {
                     <button
                       key={t}
                       onClick={() => navigate(`/course/${id}/${t}`)}
+<<<<<<< HEAD
                       className={`group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200
             ${
               isActive
@@ -647,6 +669,29 @@ function CourseView() {
                   ? "bg-[var(--accent)]/20 text-[var(--accent)]"
                   : "bg-[var(--border)]/10 group-hover:bg-[var(--border)]/20"
               }`}
+=======
+                      className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl
+text-sm font-semibold transition-all duration-200 cursor-pointer mb-1 relative overflow-hidden border-none
+${
+  isActive
+    ? "bg-[var(--accent)]/12 text-[var(--accent)]"
+    : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface-elevated)]"
+}`}
+                      style={
+                        isActive
+                          ? { boxShadow: "inset 3px 0 0 var(--accent)" }
+                          : {}
+                      }
+                    >
+                      {/* Icon */}
+                      <span
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all
+  ${
+    isActive
+      ? "bg-[var(--accent)]/20"
+      : "bg-[var(--surface-elevated)] group-hover:bg-[var(--border)]"
+  }`}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                       >
                         {meta.icon}
                       </span>
@@ -658,12 +703,21 @@ function CourseView() {
 
                       {/* Count */}
                       <span
+<<<<<<< HEAD
                         className={`text-[10px] font-medium px-2 py-[2px] rounded-md transition-all
               ${
                 isActive
                   ? "bg-[var(--accent)]/20 text-[var(--accent)]"
                   : "bg-[var(--border)]/20 text-[var(--muted)] group-hover:bg-[var(--border)]/30"
               }`}
+=======
+                        className={`relative text-[10px] font-black px-2 py-0.5 rounded-lg shrink-0 transition-all duration-200
+                                        ${
+                                          isActive
+                                            ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                                            : "bg-[var(--border)] text-[var(--muted)]"
+                                        }`}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                       >
                         {tabCount[t]}
                       </span>
@@ -671,6 +725,77 @@ function CourseView() {
                   );
                 })}
               </div>
+<<<<<<< HEAD
+=======
+
+              {/* Progress strip for students */}
+              {!isTeacher && materials.length > 0 && (
+                <div className="px-4 py-3 border-t border-[var(--border)]">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">
+                      Progress
+                    </span>
+                    <span className="text-xs font-black text-[var(--accent)]">
+                      {matProgress}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-700"
+                      style={{ width: `${matProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-[var(--muted)] mt-1.5 font-medium">
+                    {completedMats.size}/{materials.length} materials done
+                  </p>
+                </div>
+              )}
+
+              {/* Quick stats for teacher */}
+              {isTeacher && (
+                <div className="px-4 pb-4">
+                  <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-2">
+                    Overview
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      {
+                        label: "Students",
+                        val: course.enrollmentCount || 0,
+                        color: "text-emerald-500",
+                      },
+                      {
+                        label: "Materials",
+                        val: materials.length,
+                        color: "text-blue-500",
+                      },
+                      {
+                        label: "Quizzes",
+                        val: quizzes.length,
+                        color: "text-pink-500",
+                      },
+                      {
+                        label: "Live",
+                        val: liveClasses.length,
+                        color: "text-red-500",
+                      },
+                    ].map((s) => (
+                      <div
+                        key={s.label}
+                        className="rounded-xl p-3 border border-[var(--border)] bg-[var(--surface-elevated)]"
+                      >
+                        <p className={`text-sm font-black ${s.color}`}>
+                          {s.val}
+                        </p>
+                        <p className="text-[8px] font-bold text-[var(--muted)] uppercase tracking-wider">
+                          {s.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
             </div>
           </aside>
 
@@ -703,9 +828,15 @@ function CourseView() {
               })}
             </div>
 
+<<<<<<< HEAD
             {/* Content */}
             <div className="rounded-[2rem] border border-[var(--border)]/20 bg-[var(--surface)] p-6 shadow-[0_24px_64px_-40px_rgba(15,23,42,0.45)]">
               <div key={tab} className="animate-[fadeIn_0.25s_ease]">
+=======
+            {/* Tab content */}
+            <div className="rounded-2xl p-5 border border-[var(--border)] bg-[var(--surface)] shadow-sm animate-fade-in transition-colors duration-300">
+              <div className="animate-[fade-in_0.3s_ease_both]" key={tab}>
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
                 {tab === "materials" && (
                   <MaterialsTab
                     materials={materials}

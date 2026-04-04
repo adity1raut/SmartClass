@@ -36,6 +36,7 @@ function LiveClassCard({
 
   return (
     <div
+<<<<<<< HEAD
       className="group rounded-2xl border border-[var(--border)]/15 bg-[var(--card)] backdrop-blur-xl 
                     shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
     >
@@ -51,6 +52,12 @@ function LiveClassCard({
       />
 
       <div className="p-6 flex gap-4">
+=======
+      className={`group bg-[var(--surface)] rounded-2xl border overflow-hidden transition-all duration-300
+                   hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.10)] ${statusMeta.cardBorder}`}
+    >
+      <div className="p-5 sm:p-6 flex items-start gap-4">
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
         {/* Icon */}
         <div
           className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl border shrink-0

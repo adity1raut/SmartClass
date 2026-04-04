@@ -21,7 +21,12 @@ const THEME_META = {
   },
   [themeMap.dark]: {
     label: "Dark",
+<<<<<<< HEAD
     icon: Moon,
+=======
+    icon: "🌙",
+    color: "from-indigo-500 to-purple-600",
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
   },
 };
 
@@ -110,9 +115,7 @@ function Navbar() {
   }, []);
 
   const cycleTheme = () => {
-    const i = themeKeys.indexOf(themeName);
-    const next = themeKeys[(i + 1) % themeKeys.length];
-    setThemeName(next);
+    setThemeName((prev) => (prev === "light" ? "dark" : "light"));
   };
 
   const handleLogout = () => {
@@ -259,11 +262,43 @@ function Navbar() {
         )}
       </div>
 
+<<<<<<< HEAD
       {/* RIGHT */}
       <div className="flex items-center gap-3">
         {/* THEME */}
+=======
+      {/* Right Section */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5">
+        {/* Desktop theme toggle: Light / Dark */}
+        <div className="hidden lg:flex items-center gap-0.5 p-1 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)]">
+          {Object.keys(themeMap).map((key) => {
+            const active = themeName === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setThemeName(key)}
+                title={THEME_META[key]?.label || key}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                  active
+                    ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[0_4px_12px_-4px_var(--accent)]"
+                    : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface)]"
+                } active:scale-95`}
+              >
+                <span>{THEME_META[key]?.icon || "🎨"}</span>
+                <span className="hidden xl:inline">
+                  {THEME_META[key]?.label || key}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mobile: icon-only toggle */}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
         <button
           onClick={cycleTheme}
+<<<<<<< HEAD
           className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--border)]
   hover:bg-[var(--accent)]/10 transition-all duration-200"
         >
@@ -278,6 +313,16 @@ function Navbar() {
               </>
             );
           })()}
+=======
+          className="lg:hidden h-9 w-9 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)]
+                     text-sm cursor-pointer hover:bg-[var(--accent)]/12
+                     transition-all duration-200 active:scale-90 flex items-center justify-center
+                     hover:border-[var(--accent)]/40"
+          title={`Switch to ${themeName === "light" ? "dark" : "light"} mode`}
+          aria-label="Toggle theme"
+        >
+          {themeName === "dark" ? "☀️" : "🌙"}
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
         </button>
 
         {isAuthenticated ? (

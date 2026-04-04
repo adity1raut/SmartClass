@@ -70,8 +70,16 @@ function LiveClassesTab({
 
       {/* Empty State */}
       {liveClasses.length === 0 ? (
+<<<<<<< HEAD
         <div className="text-center py-16 rounded-2xl border border-[var(--border)]/20 bg-[var(--card)] shadow-sm">
           <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-2xl mx-auto mb-4">
+=======
+        <div className="text-center py-20 bg-[var(--surface)] rounded-2xl border border-[var(--border)]">
+          <div
+            className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/15 flex items-center justify-center text-3xl mx-auto mb-5
+                          shadow-[0_8px_24px_-8px_rgba(239,68,68,0.15)]"
+          >
+>>>>>>> 42795c9a6a2ed72e942e6619110abc54bb76c281
             📹
           </div>
           <p className="text-base font-semibold text-[var(--text)]">
