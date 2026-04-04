@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api.js";
@@ -9,7 +9,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { GraduationCap } from "lucide-react";
 import { Brain, ClipboardList, Clock, Calendar, FileText } from "lucide-react";
-import { BookOpen,Video } from "lucide-react";
+import { BookOpen, Video } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -31,7 +31,7 @@ import {
   Lightbulb,
   BarChart3,
   BrainCircuit,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 
 function SdAiMarkdown({ text }) {
@@ -591,7 +591,7 @@ function StudentDashboard() {
     }
   };
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       const dashResponse = await apiFetch(`/api/students/${user.id}/dashboard`);
@@ -614,7 +614,7 @@ function StudentDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (user?.id) {
@@ -629,7 +629,7 @@ function StudentDashboard() {
         socket.off("dashboard-update");
       };
     }
-  }, [user?.id]);
+  }, [load]);
 
   const enroll = async (courseId) => {
     setEnrollingId(courseId);
@@ -676,28 +676,28 @@ function StudentDashboard() {
   const enrolledIds = enrolled.map((c) => c.id);
   const available = allCourses.filter((c) => !enrolledIds.includes(c.id));
 
-const stats = [
-  {
-    icon: BookOpen,
-    val: dashData.totalEnrolled ?? enrolled.length,
-    label: "Enrolled",
-  },
-  {
-    icon: ClipboardList,
-    val: dashData.pendingAssignments ?? 0,
-    label: "Pending",
-  },
-  {
-    icon: Brain,
-    val: dashData.completedQuizzes ?? 0,
-    label: "Quizzes Done",
-  },
-  {
-    icon: Video,
-    val: dashData.upcomingClasses?.length ?? 0,
-    label: "Upcoming",
-  },
-];
+  const stats = [
+    {
+      icon: BookOpen,
+      val: dashData.totalEnrolled ?? enrolled.length,
+      label: "Enrolled",
+    },
+    {
+      icon: ClipboardList,
+      val: dashData.pendingAssignments ?? 0,
+      label: "Pending",
+    },
+    {
+      icon: Brain,
+      val: dashData.completedQuizzes ?? 0,
+      label: "Quizzes Done",
+    },
+    {
+      icon: Video,
+      val: dashData.upcomingClasses?.length ?? 0,
+      label: "Upcoming",
+    },
+  ];
 
   const chartColors = ["#7cff6b", "#a78bfa", "#f472b6", "#fbbf24", "#34d399"];
 
@@ -713,9 +713,9 @@ const stats = [
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col relative overflow-hidden">
       <div className="absolute inset-0 -z-10">
-  <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_20%,#7c3aed33,transparent_40%)]" />
-  <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_80%,#22c55e33,transparent_40%)]" />
-</div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_20%,#7c3aed33,transparent_40%)]" />
+        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_80%,#22c55e33,transparent_40%)]" />
+      </div>
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 relative z-10">
@@ -740,21 +740,19 @@ const stats = [
         </div>
 
         {/* Stats Grid */}
-       <div className="relative flex flex-col gap-8 mb-12">
+        <div className="relative flex flex-col gap-8 mb-12">
+          {/* Top Divider */}
+          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-40" />
 
-  {/* Top Divider */}
-  <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-40" />
+          {/* Stats Cards */}
+          <div className="flex flex-wrap justify-center gap-8">
+            {stats.map((s) => {
+              const Icon = s.icon;
 
-  {/* Stats Cards */}
-  <div className="flex flex-wrap justify-center gap-8">
-
-    {stats.map((s, i) => {
-      const Icon = s.icon;
-
-      return (
-        <div
-          key={s.label}
-          className="
+              return (
+                <div
+                  key={s.label}
+                  className="
             group relative w-[240px] h-[160px]
             rounded-2xl
             bg-white
@@ -764,39 +762,35 @@ const stats = [
             transition-all duration-300
             hover:-translate-y-1
           "
-        >
-          {/* Soft Hover Glow */}
-          <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300">
-            <div className="absolute inset-0 bg-green-100/40" />
+                >
+                  {/* Soft Hover Glow */}
+                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300">
+                    <div className="absolute inset-0 bg-green-100/40" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative z-10 flex flex-col items-center justify-center h-full gap-4 text-center px-4">
+                    {/* Icon */}
+                    <div className="p-3 rounded-xl bg-green-50 group-hover:bg-green-100 transition">
+                      <Icon className="w-7 h-7 text-green-600" />
+                    </div>
+
+                    {/* Value */}
+                    <p className="text-3xl font-bold text-gray-800">{s.val}</p>
+
+                    {/* Label */}
+                    <p className="text-sm text-gray-500 font-medium">
+                      {s.label}
+                    </p>
+                  </div>
+
+                  {/* Bottom Accent Line */}
+                  <div className="absolute bottom-0 left-0 w-0 h-[3px] bg-green-500 group-hover:w-full transition-all duration-300 rounded-b-2xl" />
+                </div>
+              );
+            })}
           </div>
-
-          {/* Content */}
-          <div className="relative z-10 flex flex-col items-center justify-center h-full gap-4 text-center px-4">
-
-            {/* Icon */}
-            <div className="p-3 rounded-xl bg-green-50 group-hover:bg-green-100 transition">
-              <Icon className="w-7 h-7 text-green-600" />
-            </div>
-
-            {/* Value */}
-            <p className="text-3xl font-bold text-gray-800">
-              {s.val}
-            </p>
-
-            {/* Label */}
-            <p className="text-sm text-gray-500 font-medium">
-              {s.label}
-            </p>
-          </div>
-
-          {/* Bottom Accent Line */}
-          <div className="absolute bottom-0 left-0 w-0 h-[3px] bg-green-500 group-hover:w-full transition-all duration-300 rounded-b-2xl" />
         </div>
-      );
-    })}
-
-  </div>
-</div>
 
         {/* AI Assistant Section */}
         <div
@@ -805,51 +799,49 @@ const stats = [
         >
           <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
             <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center">
-  <BrainCircuit className="w-5 h-5 text-[var(--accent)]" />
-</div>
+              <BrainCircuit className="w-5 h-5 text-[var(--accent)]" />
+            </div>
             AI Assistant
           </h2>
-         <div className="relative flex flex-col gap-8">
+          <div className="relative flex flex-col gap-8">
+            {/* Top Divider */}
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-40" />
 
-  {/* Top Divider */}
-  <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-40" />
+            {/* AI Tools */}
+            <div className="flex flex-wrap justify-center gap-8">
+              {[
+                {
+                  icon: MessageCircle,
+                  label: "AI Chat",
+                  desc: "Ask anything instantly",
+                  type: "chat",
+                },
+                {
+                  icon: CalendarDays,
+                  label: "Study Plan",
+                  desc: "Smart weekly planner",
+                  type: "plan",
+                },
+                {
+                  icon: Lightbulb,
+                  label: "Explain",
+                  desc: "Break down concepts",
+                  type: "explain",
+                },
+                {
+                  icon: BarChart3,
+                  label: "Performance",
+                  desc: "Analyze progress",
+                  type: "performance",
+                },
+              ].map((tool) => {
+                const Icon = tool.icon;
 
-  {/* AI Tools */}
-  <div className="flex flex-wrap justify-center gap-8">
-
-    {[
-      {
-        icon: MessageCircle,
-        label: "AI Chat",
-        desc: "Ask anything instantly",
-        type: "chat",
-      },
-      {
-        icon: CalendarDays,
-        label: "Study Plan",
-        desc: "Smart weekly planner",
-        type: "plan",
-      },
-      {
-        icon: Lightbulb,
-        label: "Explain",
-        desc: "Break down concepts",
-        type: "explain",
-      },
-      {
-        icon: BarChart3,
-        label: "Performance",
-        desc: "Analyze progress",
-        type: "performance",
-      },
-    ].map((tool) => {
-      const Icon = tool.icon;
-
-      return (
-        <button
-          key={tool.type}
-          onClick={() => openAiModal(tool.type)}
-          className="
+                return (
+                  <button
+                    key={tool.type}
+                    onClick={() => openAiModal(tool.type)}
+                    className="
             group relative w-[240px] h-[160px]
             rounded-2xl
             bg-white
@@ -859,209 +851,194 @@ const stats = [
             transition-all duration-300
             hover:-translate-y-1
           "
-        >
-          {/* Soft Hover Glow */}
-          <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300">
-            <div className="absolute inset-0 bg-green-100/40" />
-          </div>
+                  >
+                    {/* Soft Hover Glow */}
+                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300">
+                      <div className="absolute inset-0 bg-green-100/40" />
+                    </div>
 
-          {/* Content */}
-          <div className="relative z-10 flex flex-col items-center justify-center h-full gap-4 text-center px-4">
+                    {/* Content */}
+                    <div className="relative z-10 flex flex-col items-center justify-center h-full gap-4 text-center px-4">
+                      {/* Icon */}
+                      <div className="p-4 rounded-xl bg-green-50 group-hover:bg-green-100 transition">
+                        <Icon className="w-7 h-7 text-green-600" />
+                      </div>
 
-            {/* Icon */}
-            <div className="p-4 rounded-xl bg-green-50 group-hover:bg-green-100 transition">
-              <Icon className="w-7 h-7 text-green-600" />
+                      {/* Title */}
+                      <p className="text-base font-semibold text-gray-800">
+                        {tool.label}
+                      </p>
+
+                      {/* Description */}
+                      <p className="text-sm text-gray-500">{tool.desc}</p>
+                    </div>
+
+                    {/* Bottom Accent Line */}
+                    <div className="absolute bottom-0 left-0 w-0 h-[3px] bg-green-500 group-hover:w-full transition-all duration-300 rounded-b-2xl" />
+                  </button>
+                );
+              })}
             </div>
-
-            {/* Title */}
-            <p className="text-base font-semibold text-gray-800">
-              {tool.label}
-            </p>
-
-            {/* Description */}
-            <p className="text-sm text-gray-500">
-              {tool.desc}
-            </p>
           </div>
-
-          {/* Bottom Accent Line */}
-          <div className="absolute bottom-0 left-0 w-0 h-[3px] bg-green-500 group-hover:w-full transition-all duration-300 rounded-b-2xl" />
-        </button>
-      );
-    })}
-  </div>
-</div>
         </div>
 
         {/* ── Active Quizzes ── */}
-       <div className="mb-14">
-
-  {/* Header */}
-  <div className="flex items-center justify-between mb-6">
-    <h2 className="text-2xl font-bold flex items-center gap-3 text-[var(--text)]">
-      <div className="p-2 rounded-xl bg-[var(--accent)]/15 ">
-        <Brain className="w-6 h-6 text-[var(--accent)]" />
-      </div>
-      Active Quizzes
-    </h2>
-  </div>
-
-  {quizzesLoading ? (
-    <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
-      <span className="w-5 h-5 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
-      Loading quizzes…
-    </div>
-  ) : activeQuizzes.length === 0 ? (
-    <div className="bg-white border border-green-100 rounded-2xl p-10 text-center shadow-sm">
-      <Brain className="w-10 h-10 text-green-400 mx-auto mb-3" />
-      <p className="text-gray-500 font-medium">
-        No active quizzes right now
-      </p>
-    </div>
-  ) : (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-      {activeQuizzes.map((q) => (
-        <div
-          key={q.id}
-          className="group bg-white border border-green-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
-        >
-
-          {/* Top */}
-          <div>
-            <p className="font-semibold text-gray-800 text-lg mb-1 line-clamp-1">
-              {q.title}
-            </p>
-
-            <p className="text-xs text-gray-500 mb-4">
-              {q.courseTitle}
-            </p>
-
-            {/* Meta */}
-            <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-
-              <span className="flex items-center gap-1">
-                <FileText className="w-4 h-4" />
-                {q.questionCount ?? q.questions?.length ?? 0} Q
-              </span>
-
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {q.timeLimit ? `${q.timeLimit} min` : "No limit"}
-              </span>
-
-              {q.dueDate && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  {new Date(q.dueDate).toLocaleDateString()}
-                </span>
-              )}
-
-            </div>
+        <div className="mb-14">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-3 text-[var(--text)]">
+              <div className="p-2 rounded-xl bg-[var(--accent)]/15 ">
+                <Brain className="w-6 h-6 text-[var(--accent)]" />
+              </div>
+              Active Quizzes
+            </h2>
           </div>
 
-          {/* Button */}
-          <button
-            onClick={() => startQuiz(q)}
-            className="mt-6 py-3 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition active:scale-95"
-          >
-            Start Quiz →
-          </button>
+          {quizzesLoading ? (
+            <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
+              <span className="w-5 h-5 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
+              Loading quizzes…
+            </div>
+          ) : activeQuizzes.length === 0 ? (
+            <div className="bg-white border border-green-100 rounded-2xl p-10 text-center shadow-sm">
+              <Brain className="w-10 h-10 text-green-400 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">
+                No active quizzes right now
+              </p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeQuizzes.map((q) => (
+                <div
+                  key={q.id}
+                  className="group bg-white border border-green-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
+                >
+                  {/* Top */}
+                  <div>
+                    <p className="font-semibold text-gray-800 text-lg mb-1 line-clamp-1">
+                      {q.title}
+                    </p>
 
+                    <p className="text-xs text-gray-500 mb-4">
+                      {q.courseTitle}
+                    </p>
+
+                    {/* Meta */}
+                    <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <FileText className="w-4 h-4" />
+                        {q.questionCount ?? q.questions?.length ?? 0} Q
+                      </span>
+
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {q.timeLimit ? `${q.timeLimit} min` : "No limit"}
+                      </span>
+
+                      {q.dueDate && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(q.dueDate).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Button */}
+                  <button
+                    onClick={() => startQuiz(q)}
+                    className="mt-6 py-3 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition active:scale-95"
+                  >
+                    Start Quiz →
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      ))}
-
-    </div>
-  )}
-</div>
 
         {/* ── My Assignments ── */}
-       <div className="mb-14">
-
-  {/* Header */}
-  <div className="flex items-center justify-between mb-6">
-    <h2 className="text-2xl font-bold flex items-center gap-3 text-[var(--text)]">
-      <div className="p-2 rounded-xl bg-[var(--accent)]/15 ">
-        <ClipboardList className="w-6 h-6 text-[var(--accent)]" />
-      </div>
-      My Assignments
-    </h2>
-  </div>
-
-  {assignmentsLoading ? (
-    <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
-      <span className="w-5 h-5 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
-      Loading assignments…
-    </div>
-  ) : myAssignments.length === 0 ? (
-    <div className="bg-white border border-green-100 rounded-2xl p-10 text-center shadow-sm">
-      <ClipboardList className="w-10 h-10 text-green-400 mx-auto mb-3" />
-      <p className="text-gray-500 font-medium">
-        No assignments yet
-      </p>
-    </div>
-  ) : (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-      {myAssignments.map((a) => {
-        const isOverdue = a.dueDate && new Date(a.dueDate) < new Date();
-
-        return (
-          <div
-            key={a.id}
-            className="group bg-white border border-green-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
-          >
-
-            {/* Top */}
-            <div>
-              <p className="font-semibold text-gray-800 text-lg mb-1 line-clamp-1">
-                {a.title}
-              </p>
-
-              <p className="text-xs text-gray-500 mb-3">
-                {a.courseTitle}
-              </p>
-
-              {a.description && (
-                <p className="text-sm text-gray-500 mb-4 line-clamp-2">
-                  {a.description}
-                </p>
-              )}
-
-              {/* Meta */}
-              <div className="flex justify-between text-xs">
-
-                <span className="text-gray-500">
-                  {a.maxScore} pts
-                </span>
-
-                {a.dueDate ? (
-                  <span className={isOverdue ? "text-red-500 font-semibold" : "text-gray-500"}>
-                    {isOverdue ? "Overdue" : "Due"}:{" "}
-                    {new Date(a.dueDate).toLocaleDateString()}
-                  </span>
-                ) : (
-                  <span className="text-gray-400">No due date</span>
-                )}
-
+        <div className="mb-14">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-3 text-[var(--text)]">
+              <div className="p-2 rounded-xl bg-[var(--accent)]/15 ">
+                <ClipboardList className="w-6 h-6 text-[var(--accent)]" />
               </div>
-            </div>
-
-            {/* Button */}
-            <button
-              onClick={() => openSubmitModal(a)}
-              className="mt-6 py-3 rounded-xl border border-green-500 text-green-600 font-semibold text-sm hover:bg-green-50 transition active:scale-95"
-            >
-              Submit / View →
-            </button>
-
+              My Assignments
+            </h2>
           </div>
-        );
-      })}
 
-    </div>
-  )}
-</div>
+          {assignmentsLoading ? (
+            <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
+              <span className="w-5 h-5 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
+              Loading assignments…
+            </div>
+          ) : myAssignments.length === 0 ? (
+            <div className="bg-white border border-green-100 rounded-2xl p-10 text-center shadow-sm">
+              <ClipboardList className="w-10 h-10 text-green-400 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">No assignments yet</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {myAssignments.map((a) => {
+                const isOverdue = a.dueDate && new Date(a.dueDate) < new Date();
+
+                return (
+                  <div
+                    key={a.id}
+                    className="group bg-white border border-green-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
+                  >
+                    {/* Top */}
+                    <div>
+                      <p className="font-semibold text-gray-800 text-lg mb-1 line-clamp-1">
+                        {a.title}
+                      </p>
+
+                      <p className="text-xs text-gray-500 mb-3">
+                        {a.courseTitle}
+                      </p>
+
+                      {a.description && (
+                        <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+                          {a.description}
+                        </p>
+                      )}
+
+                      {/* Meta */}
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">{a.maxScore} pts</span>
+
+                        {a.dueDate ? (
+                          <span
+                            className={
+                              isOverdue
+                                ? "text-red-500 font-semibold"
+                                : "text-gray-500"
+                            }
+                          >
+                            {isOverdue ? "Overdue" : "Due"}:{" "}
+                            {new Date(a.dueDate).toLocaleDateString()}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">No due date</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Button */}
+                    <button
+                      onClick={() => openSubmitModal(a)}
+                      className="mt-6 py-3 rounded-xl border border-green-500 text-green-600 font-semibold text-sm hover:bg-green-50 transition active:scale-95"
+                    >
+                      Submit / View →
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Charts Section */}
         {dashData.performanceData?.length > 0 ||
@@ -1383,106 +1360,106 @@ const stats = [
         )}
 
         {/* Available Courses */}
-     {available.length > 0 && (
-  <div
-    className="animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]"
-    style={{ animationDelay: "400ms" }}
-  >
-    {/* Header */}
-    <div className="flex items-center justify-between mb-8">
-      <div>
-        <h2 className="text-2xl font-extrabold text-[var(--text)] flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg">
-            🌟
-          </span>
-          Explore More
-        </h2>
-        <p className="text-sm text-[var(--text)] mt-1 ml-[52px]">
-          Expand your skills with new courses
-        </p>
-      </div>
+        {available.length > 0 && (
+          <div
+            className="animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]"
+            style={{ animationDelay: "400ms" }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-extrabold text-[var(--text)] flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-lg">
+                    🌟
+                  </span>
+                  Explore More
+                </h2>
+                <p className="text-sm text-[var(--text)] mt-1 ml-[52px]">
+                  Expand your skills with new courses
+                </p>
+              </div>
 
-      <span className="px-4 py-2 rounded-full text-emerald-600 text-xs font-bold bg-emerald-50 border border-emerald-200">
-        {available.length} available
-      </span>
-    </div>
-
-    {/* Cards */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {available.map((c, i) => (
-        <div
-          key={c.id}
-          className="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-          style={{ animationDelay: `${(enrolled.length + i) * 80}ms` }}
-        >
-          {/* Title + Subject */}
-          <div className="flex items-start justify-between mb-3 gap-3">
-            <h3 className="text-lg font-bold text-gray-800 flex-1 leading-snug group-hover:text-emerald-600 transition">
-              {c.title}
-            </h3>
-
-            {c.subject && (
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-emerald-100">
-                {c.subject}
+              <span className="px-4 py-2 rounded-full text-emerald-600 text-xs font-bold bg-emerald-50 border border-emerald-200">
+                {available.length} available
               </span>
-            )}
-          </div>
-
-          {/* Teacher */}
-          <p className="text-xs text-gray-500 mb-2 font-medium">
-            👨‍🏫 {c.teacher?.name || "Unknown"}
-          </p>
-
-          {/* Description */}
-          <p className="text-sm text-gray-600 mb-4 leading-relaxed line-clamp-2">
-            {c.description ||
-              "Explore this amazing course and expand your knowledge"}
-          </p>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
-              <p className="font-bold text-gray-800 text-lg">
-                {c.enrollmentCount || 0}
-              </p>
-              <p className="text-[10px] text-gray-500 font-semibold mt-0.5">
-                Enrolled
-              </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
-              <p className="font-bold text-gray-800 text-lg">
-                {c.materialCount || 0}
-              </p>
-              <p className="text-[10px] text-gray-500 font-semibold mt-0.5">
-                Materials
-              </p>
-            </div>
-          </div>
+            {/* Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {available.map((c, i) => (
+                <div
+                  key={c.id}
+                  className="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  style={{ animationDelay: `${(enrolled.length + i) * 80}ms` }}
+                >
+                  {/* Title + Subject */}
+                  <div className="flex items-start justify-between mb-3 gap-3">
+                    <h3 className="text-lg font-bold text-gray-800 flex-1 leading-snug group-hover:text-emerald-600 transition">
+                      {c.title}
+                    </h3>
 
-          {/* Button */}
-          <button
-            onClick={() => enroll(c.id)}
-            disabled={enrollingId === c.id}
-            className="w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-all duration-300
+                    {c.subject && (
+                      <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-emerald-100">
+                        {c.subject}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Teacher */}
+                  <p className="text-xs text-gray-500 mb-2 font-medium">
+                    👨‍🏫 {c.teacher?.name || "Unknown"}
+                  </p>
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed line-clamp-2">
+                    {c.description ||
+                      "Explore this amazing course and expand your knowledge"}
+                  </p>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-3 mb-5">
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                      <p className="font-bold text-gray-800 text-lg">
+                        {c.enrollmentCount || 0}
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-semibold mt-0.5">
+                        Enrolled
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                      <p className="font-bold text-gray-800 text-lg">
+                        {c.materialCount || 0}
+                      </p>
+                      <p className="text-[10px] text-gray-500 font-semibold mt-0.5">
+                        Materials
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Button */}
+                  <button
+                    onClick={() => enroll(c.id)}
+                    disabled={enrollingId === c.id}
+                    className="w-full py-3 rounded-xl text-sm font-bold cursor-pointer transition-all duration-300
               bg-emerald-500 text-white hover:bg-emerald-600
               disabled:opacity-60 disabled:cursor-not-allowed
               hover:shadow-md active:scale-95"
-          >
-            {enrollingId === c.id ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                Enrolling...
-              </span>
-            ) : (
-              "+ Enroll Now"
-            )}
-          </button>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+                  >
+                    {enrollingId === c.id ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        Enrolling...
+                      </span>
+                    ) : (
+                      "+ Enroll Now"
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Empty state */}
         {enrolled.length === 0 && available.length === 0 && !loading && (
@@ -1783,8 +1760,9 @@ const stats = [
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
                       <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center">
-  <BrainCircuit className="w-5 h-5 text-[var(--accent)]" />
-</div> AI Feedback
+                        <BrainCircuit className="w-5 h-5 text-[var(--accent)]" />
+                      </div>{" "}
+                      AI Feedback
                     </p>
                     <button
                       onClick={getAIFeedback}
@@ -1865,103 +1843,103 @@ const stats = [
 
             <div className="overflow-y-auto flex-1 p-5 space-y-4">
               {/* ── CHAT ── */}
-             {aiModal === "chat" && (
-  <div className="flex flex-col h-full">
+              {aiModal === "chat" && (
+                <div className="flex flex-col h-full">
+                  {/* Chat Box */}
+                  <div className="flex-1 bg-white rounded-2xl border border-green-100 shadow-sm p-4 overflow-y-auto space-y-4">
+                    {/* Empty State */}
+                    {chatHistory.length === 0 && (
+                      <div className="flex flex-col items-center justify-center h-full text-center text-gray-400 text-sm">
+                        <div className="text-3xl mb-2">💬</div>
+                        Ask me anything about your courses…
+                      </div>
+                    )}
 
-    {/* Chat Box */}
-    <div className="flex-1 bg-white rounded-2xl border border-green-100 shadow-sm p-4 overflow-y-auto space-y-4">
-
-      {/* Empty State */}
-      {chatHistory.length === 0 && (
-        <div className="flex flex-col items-center justify-center h-full text-center text-gray-400 text-sm">
-          <div className="text-3xl mb-2">💬</div>
-          Ask me anything about your courses…
-        </div>
-      )}
-
-      {/* Messages */}
-      {chatHistory.map((m, i) => (
-        <div
-          key={i}
-          className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-        >
-          <div
-            className={`
+                    {/* Messages */}
+                    {chatHistory.map((m, i) => (
+                      <div
+                        key={i}
+                        className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`
               max-w-[75%] px-4 py-3 text-sm leading-relaxed rounded-2xl shadow-sm
-              ${m.role === "user"
-                ? "bg-green-500 text-white rounded-br-md"
-                : "bg-gray-50 border border-gray-200 text-gray-800 rounded-bl-md"}
+              ${
+                m.role === "user"
+                  ? "bg-green-500 text-white rounded-br-md"
+                  : "bg-gray-50 border border-gray-200 text-gray-800 rounded-bl-md"
+              }
             `}
-          >
-            {m.role === "assistant" ? (
-              <SdAiMarkdown text={m.content} />
-            ) : (
-              m.content
-            )}
-          </div>
-        </div>
-      ))}
+                        >
+                          {m.role === "assistant" ? (
+                            <SdAiMarkdown text={m.content} />
+                          ) : (
+                            m.content
+                          )}
+                        </div>
+                      </div>
+                    ))}
 
-      {/* Typing Loader */}
-      {aiLoading && (
-        <div className="flex justify-start">
-          <div className="bg-gray-50 border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
-            <div className="flex gap-1">
-              {[0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
-                  style={{ animationDelay: `${i * 0.15}s` }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+                    {/* Typing Loader */}
+                    {aiLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-gray-50 border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
+                          <div className="flex gap-1">
+                            {[0, 1, 2].map((i) => (
+                              <span
+                                key={i}
+                                className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
+                                style={{ animationDelay: `${i * 0.15}s` }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-      {/* Error */}
-      {aiError && (
-        <p className="text-red-400 text-xs text-center">
-          {aiError}
-        </p>
-      )}
+                    {/* Error */}
+                    {aiError && (
+                      <p className="text-red-400 text-xs text-center">
+                        {aiError}
+                      </p>
+                    )}
 
-      <div ref={chatBottomRef} />
-    </div>
+                    <div ref={chatBottomRef} />
+                  </div>
 
-    {/* Input Area */}
-    <form
-      onSubmit={sendChat}
-      className="mt-3 flex items-center gap-2 bg-white border border-green-100 rounded-xl p-2 shadow-sm"
-    >
-      <input
-        className="flex-1 px-3 py-2 text-sm outline-none text-gray-700 placeholder-gray-400"
-        value={chatInput}
-        onChange={(e) => setChatInput(e.target.value)}
-        placeholder="Ask anything educational…"
-      />
+                  {/* Input Area */}
+                  <form
+                    onSubmit={sendChat}
+                    className="mt-3 flex items-center gap-2 bg-white border border-green-100 rounded-xl p-2 shadow-sm"
+                  >
+                    <input
+                      className="flex-1 px-3 py-2 text-sm outline-none text-gray-700 placeholder-gray-400"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder="Ask anything educational…"
+                    />
 
-      <button
-        type="submit"
-        disabled={aiLoading || !chatInput.trim()}
-        className="px-4 py-2 rounded-lg bg-green-500 text-white font-semibold text-sm disabled:opacity-50 transition hover:bg-green-600 active:scale-95"
-      >
-        Send
-      </button>
-    </form>
+                    <button
+                      type="submit"
+                      disabled={aiLoading || !chatInput.trim()}
+                      className="px-4 py-2 rounded-lg bg-green-500 text-white font-semibold text-sm disabled:opacity-50 transition hover:bg-green-600 active:scale-95"
+                    >
+                      Send
+                    </button>
+                  </form>
 
-    {/* Clear Button */}
-    <button
-      onClick={() => {
-        setChatHistory([]);
-        setAiError("");
-      }}
-      className="text-xs text-gray-400 hover:text-red-500 transition mt-2 text-right"
-    >
-      Clear conversation
-    </button>
-  </div>
-)}
+                  {/* Clear Button */}
+                  <button
+                    onClick={() => {
+                      setChatHistory([]);
+                      setAiError("");
+                    }}
+                    className="text-xs text-gray-400 hover:text-red-500 transition mt-2 text-right"
+                  >
+                    Clear conversation
+                  </button>
+                </div>
+              )}
 
               {/* ── STUDY PLAN ── */}
               {aiModal === "plan" && (
@@ -2209,7 +2187,7 @@ const stats = [
               )}
 
               {/* ── EXPLAIN ── */}
-               {aiModal === "explain" && (
+              {aiModal === "explain" && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -2315,153 +2293,153 @@ const stats = [
 
               {/* ── PERFORMANCE ── */}
               {aiModal === "performance" && (
-  <div className="space-y-6">
+                <div className="space-y-6">
+                  {/* REAL DATA */}
+                  {perfContext?.courses?.length > 0 && (
+                    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+                      <p className="text-xs font-bold text-gray-500 mb-3">
+                        Load Real Data
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {perfContext.courses.map((c) => (
+                          <button
+                            key={c.courseId}
+                            onClick={() => loadRealPerformanceData(c)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition"
+                          >
+                            {c.title}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-    {/* REAL DATA */}
-    {perfContext?.courses?.length > 0 && (
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-        <p className="text-xs font-bold text-gray-500 mb-3">
-          Load Real Data
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {perfContext.courses.map((c) => (
-            <button
-              key={c.courseId}
-              onClick={() => loadRealPerformanceData(c)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 transition"
-            >
-              {c.title}
-            </button>
-          ))}
-        </div>
-      </div>
-    )}
+                  {/* FORM */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      runAi("/analyze-performance", {
+                        subject: perfForm.subject,
+                        quiz_scores: perfForm.quiz_scores
+                          .split(",")
+                          .map((s) => parseFloat(s.trim()))
+                          .filter((n) => !isNaN(n)),
+                        assignment_grades: perfForm.assignment_grades
+                          .split(",")
+                          .map((s) => parseFloat(s.trim()))
+                          .filter((n) => !isNaN(n)),
+                        course_progress: Number(perfForm.course_progress),
+                      });
+                    }}
+                    className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-5"
+                  >
+                    <h3 className="text-lg font-bold text-gray-800">
+                      Analyze Performance
+                    </h3>
 
-    {/* FORM */}
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        runAi("/analyze-performance", {
-          subject: perfForm.subject,
-          quiz_scores: perfForm.quiz_scores
-            .split(",")
-            .map((s) => parseFloat(s.trim()))
-            .filter((n) => !isNaN(n)),
-          assignment_grades: perfForm.assignment_grades
-            .split(",")
-            .map((s) => parseFloat(s.trim()))
-            .filter((n) => !isNaN(n)),
-          course_progress: Number(perfForm.course_progress),
-        });
-      }}
-      className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-5"
-    >
-      <h3 className="text-lg font-bold text-gray-800">
-        Analyze Performance
-      </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <input
+                        required
+                        value={perfForm.subject}
+                        onChange={(e) =>
+                          setPerfForm((f) => ({
+                            ...f,
+                            subject: e.target.value,
+                          }))
+                        }
+                        placeholder="Subject"
+                        className="px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
+                      />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={perfForm.course_progress}
+                        onChange={(e) =>
+                          setPerfForm((f) => ({
+                            ...f,
+                            course_progress: e.target.value,
+                          }))
+                        }
+                        placeholder="Progress %"
+                        className="px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
+                      />
 
-        <input
-          required
-          value={perfForm.subject}
-          onChange={(e) =>
-            setPerfForm((f) => ({
-              ...f,
-              subject: e.target.value,
-            }))
-          }
-          placeholder="Subject"
-          className="px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
-        />
+                      <input
+                        value={perfForm.quiz_scores}
+                        onChange={(e) =>
+                          setPerfForm((f) => ({
+                            ...f,
+                            quiz_scores: e.target.value,
+                          }))
+                        }
+                        placeholder="Quiz scores (e.g. 70,80,90)"
+                        className="col-span-2 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
+                      />
 
-        <input
-          type="number"
-          min={0}
-          max={100}
-          value={perfForm.course_progress}
-          onChange={(e) =>
-            setPerfForm((f) => ({
-              ...f,
-              course_progress: e.target.value,
-            }))
-          }
-          placeholder="Progress %"
-          className="px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
-        />
+                      <input
+                        value={perfForm.assignment_grades}
+                        onChange={(e) =>
+                          setPerfForm((f) => ({
+                            ...f,
+                            assignment_grades: e.target.value,
+                          }))
+                        }
+                        placeholder="Assignment grades (e.g. 75,85)"
+                        className="col-span-2 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
+                      />
+                    </div>
 
-        <input
-          value={perfForm.quiz_scores}
-          onChange={(e) =>
-            setPerfForm((f) => ({
-              ...f,
-              quiz_scores: e.target.value,
-            }))
-          }
-          placeholder="Quiz scores (e.g. 70,80,90)"
-          className="col-span-2 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
-        />
+                    {/* ACTIONS */}
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        disabled={aiLoading || perfLoadingReal}
+                        className="flex-1 py-3 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition"
+                      >
+                        {aiLoading ? "Analyzing..." : "Analyze"}
+                      </button>
 
-        <input
-          value={perfForm.assignment_grades}
-          onChange={(e) =>
-            setPerfForm((f) => ({
-              ...f,
-              assignment_grades: e.target.value,
-            }))
-          }
-          placeholder="Assignment grades (e.g. 75,85)"
-          className="col-span-2 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-200 outline-none"
-        />
-      </div>
+                      {perfForm.subject && (
+                        <button
+                          type="button"
+                          onClick={analyzeRealPerformance}
+                          disabled={aiLoading || perfLoadingReal}
+                          className="px-4 py-3 rounded-xl border border-emerald-300 text-emerald-600 hover:bg-emerald-50 transition"
+                        >
+                          {perfLoadingReal ? "..." : "Real Data"}
+                        </button>
+                      )}
+                    </div>
 
-      {/* ACTIONS */}
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={aiLoading || perfLoadingReal}
-          className="flex-1 py-3 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition"
-        >
-          {aiLoading ? "Analyzing..." : "Analyze"}
-        </button>
+                    {aiError && (
+                      <p className="text-red-500 text-sm">{aiError}</p>
+                    )}
+                  </form>
 
-        {perfForm.subject && (
-          <button
-            type="button"
-            onClick={analyzeRealPerformance}
-            disabled={aiLoading || perfLoadingReal}
-            className="px-4 py-3 rounded-xl border border-emerald-300 text-emerald-600 hover:bg-emerald-50 transition"
-          >
-            {perfLoadingReal ? "..." : "Real Data"}
-          </button>
-        )}
-      </div>
+                  {/* RESULT */}
+                  {aiResult && (
+                    <div
+                      ref={aiResultRef}
+                      className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                    >
+                      <div className="px-5 py-3 bg-emerald-50 border-b flex items-center gap-2">
+                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-sm font-semibold text-emerald-700">
+                          {aiResult.subject} Analysis
+                        </span>
+                      </div>
 
-      {aiError && <p className="text-red-500 text-sm">{aiError}</p>}
-    </form>
-
-    {/* RESULT */}
-    {aiResult && (
-      <div
-        ref={aiResultRef}
-        className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
-      >
-        <div className="px-5 py-3 bg-emerald-50 border-b flex items-center gap-2">
-          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-          <span className="text-sm font-semibold text-emerald-700">
-            {aiResult.subject} Analysis
-          </span>
-        </div>
-
-        <div className="p-5 max-h-[50vh] overflow-y-auto text-sm text-gray-700">
-          <SdAiMarkdown
-            text={aiResult.analysis || JSON.stringify(aiResult)}
-          />
-        </div>
-      </div>
-    )}
-  </div>
-)}
+                      <div className="p-5 max-h-[50vh] overflow-y-auto text-sm text-gray-700">
+                        <SdAiMarkdown
+                          text={aiResult.analysis || JSON.stringify(aiResult)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -19,33 +19,34 @@ function LiveClassCard({
         dot: "bg-red-500",
       }
     : isEnded
-    ? {
-        label: "Ended",
-        color: "text-gray-400",
-        bg: "bg-gray-500/10",
-        border: "border-gray-500/20",
-        dot: "bg-gray-400",
-      }
-    : {
-        label: "Scheduled",
-        color: "text-blue-500",
-        bg: "bg-blue-500/10",
-        border: "border-blue-500/20",
-        dot: "bg-blue-500",
-      };
+      ? {
+          label: "Ended",
+          color: "text-gray-400",
+          bg: "bg-gray-500/10",
+          border: "border-gray-500/20",
+          dot: "bg-gray-400",
+        }
+      : {
+          label: "Scheduled",
+          color: "text-blue-500",
+          bg: "bg-blue-500/10",
+          border: "border-blue-500/20",
+          dot: "bg-blue-500",
+        };
 
   return (
-    <div className="group rounded-2xl border border-[var(--border)]/15 bg-[var(--card)] backdrop-blur-xl 
-                    shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-
+    <div
+      className="group rounded-2xl border border-[var(--border)]/15 bg-[var(--card)] backdrop-blur-xl 
+                    shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden"
+    >
       {/* Top Accent Bar */}
       <div
         className={`h-1 w-full ${
           isLive
             ? "bg-gradient-to-r from-red-500 to-red-600"
             : isScheduled
-            ? "bg-gradient-to-r from-blue-500 to-indigo-500"
-            : "bg-gradient-to-r from-gray-400 to-gray-500"
+              ? "bg-gradient-to-r from-blue-500 to-indigo-500"
+              : "bg-gradient-to-r from-gray-400 to-gray-500"
         }`}
       />
 
@@ -181,7 +182,7 @@ function LiveClassCard({
                   onClick={() =>
                     onJoin(
                       liveClass.id,
-                      isPlatform ? null : liveClass.meetingLink
+                      isPlatform ? null : liveClass.meetingLink,
                     )
                   }
                   className={`px-5 py-2 text-xs font-semibold rounded-lg text-white transition

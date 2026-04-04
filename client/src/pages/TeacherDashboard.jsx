@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api.js";
@@ -597,14 +597,16 @@ function TeacherDashboard() {
     );
   };
 
-  const load = () =>
+  const load = useCallback(() =>
     apiFetch(`/api/teachers/${user.id}/dashboard`)
       .then((r) => r.json())
-      .then((d) => !d.error && setData(d));
+      .then((d) => !d.error && setData(d)),
+    [user.id],
+  );
 
   useEffect(() => {
     load();
-  }, [user.id]);
+  }, [load]);
 
   const openCreate = () => {
     setEditCourse(null);

@@ -167,7 +167,16 @@ function CourseView() {
     loadLiveClasses();
     loadStudents();
     loadProgress();
-  }, [id]);
+  }, [
+    id,
+    loadCourse,
+    loadMaterials,
+    loadAssignments,
+    loadQuizzes,
+    loadLiveClasses,
+    loadStudents,
+    loadProgress,
+  ]);
 
   // Keep ref in sync so async socket handlers can read latest expanded state
   useEffect(() => {
@@ -582,232 +591,229 @@ function CourseView() {
     students: students.length,
   };
 
- return (
-  <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
-    <Navbar showBack />
+  return (
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+      <Navbar showBack />
 
-    <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      {/* Header */}
-      <CourseHeader
-        course={course}
-        materials={materials}
-        assignments={assignments}
-        quizzes={quizzes}
-        liveClasses={liveClasses}
-        isTeacher={isTeacher}
-        matProgress={matProgress}
-      />
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {/* Header */}
+        <CourseHeader
+          course={course}
+          materials={materials}
+          assignments={assignments}
+          quizzes={quizzes}
+          liveClasses={liveClasses}
+          isTeacher={isTeacher}
+          matProgress={matProgress}
+        />
 
-      {/* Layout */}
-      <div className="flex gap-6 items-start">
-        {/* ── SIDEBAR ── */}
-       <aside className="hidden md:flex flex-col w-64 shrink-0 sticky top-6 self-start">
-  <div className="rounded-2xl border border-[var(--border)]/15 bg-[var(--surface)]/80 backdrop-blur-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.25)] overflow-hidden">
+        {/* Layout */}
+        <div className="flex gap-6 items-start">
+          {/* ── SIDEBAR ── */}
+          <aside className="hidden md:flex flex-col w-64 shrink-0 sticky top-6 self-start">
+            <div className="rounded-2xl border border-[var(--border)]/15 bg-[var(--surface)]/80 backdrop-blur-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.25)] overflow-hidden">
+              {/* Header */}
+              <div className="px-5 py-5 border-b border-[var(--border)]/15 bg-[var(--bg)]/60 backdrop-blur-md">
+                <p className="text-[10px] uppercase tracking-widest text-[var(--muted)] font-medium mb-1">
+                  Course
+                </p>
+                <p className="text-sm font-semibold text-[var(--text)] truncate">
+                  {course.title}
+                </p>
+              </div>
 
-    {/* Header */}
-    <div className="px-5 py-5 border-b border-[var(--border)]/15 bg-[var(--bg)]/60 backdrop-blur-md">
-      <p className="text-[10px] uppercase tracking-widest text-[var(--muted)] font-medium mb-1">
-        Course
-      </p>
-      <p className="text-sm font-semibold text-[var(--text)] truncate">
-        {course.title}
-      </p>
-    </div>
+              {/* Tabs */}
+              <div className="p-2.5 space-y-1.5">
+                {tabs.map((t) => {
+                  const meta = TAB_META[t];
+                  const isActive = tab === t;
 
-    {/* Tabs */}
-    <div className="p-2.5 space-y-1.5">
-      {tabs.map((t) => {
-        const meta = TAB_META[t];
-        const isActive = tab === t;
-
-        return (
-          <button
-            key={t}
-            onClick={() => navigate(`/course/${id}/${t}`)}
-            className={`group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => navigate(`/course/${id}/${t}`)}
+                      className={`group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200
             ${
               isActive
                 ? "bg-[var(--accent)]/12 text-[var(--accent)] border border-[var(--accent)]/20"
                 : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--border)]/10"
             }`}
-          >
-            {/* Icon */}
-            <span
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-all
+                    >
+                      {/* Icon */}
+                      <span
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm transition-all
               ${
                 isActive
                   ? "bg-[var(--accent)]/20 text-[var(--accent)]"
                   : "bg-[var(--border)]/10 group-hover:bg-[var(--border)]/20"
               }`}
-            >
-              {meta.icon}
-            </span>
+                      >
+                        {meta.icon}
+                      </span>
 
-            {/* Label */}
-            <span className="flex-1 text-left text-xs font-medium truncate">
-              {meta.label}
-            </span>
+                      {/* Label */}
+                      <span className="flex-1 text-left text-xs font-medium truncate">
+                        {meta.label}
+                      </span>
 
-            {/* Count */}
-            <span
-              className={`text-[10px] font-medium px-2 py-[2px] rounded-md transition-all
+                      {/* Count */}
+                      <span
+                        className={`text-[10px] font-medium px-2 py-[2px] rounded-md transition-all
               ${
                 isActive
                   ? "bg-[var(--accent)]/20 text-[var(--accent)]"
                   : "bg-[var(--border)]/20 text-[var(--muted)] group-hover:bg-[var(--border)]/30"
               }`}
-            >
-              {tabCount[t]}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  </div>
-</aside>
+                      >
+                        {tabCount[t]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
 
-        {/* ── MAIN CONTENT ── */}
-        <div className="flex-1 min-w-0 space-y-5">
-          
-          {/* Mobile Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2 md:hidden">
-            {tabs.map((t) => {
-              const meta = TAB_META[t];
-              const isActive = tab === t;
+          {/* ── MAIN CONTENT ── */}
+          <div className="flex-1 min-w-0 space-y-5">
+            {/* Mobile Tabs */}
+            <div className="flex gap-2 overflow-x-auto pb-2 md:hidden">
+              {tabs.map((t) => {
+                const meta = TAB_META[t];
+                const isActive = tab === t;
 
-              return (
-                <button
-                  key={t}
-                  onClick={() => navigate(`/course/${id}/${t}`)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all duration-200
+                return (
+                  <button
+                    key={t}
+                    onClick={() => navigate(`/course/${id}/${t}`)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all duration-200
                   ${
                     isActive
                       ? "bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20"
                       : "text-[var(--muted)] border border-[var(--border)]/20 hover:bg-[var(--border)]/10"
                   }`}
-                >
-                  {meta.icon}
-                  {meta.label}
-                  <span className="text-[9px] px-1 rounded bg-[var(--border)]/20">
-                    {tabCount[t]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                  >
+                    {meta.icon}
+                    {meta.label}
+                    <span className="text-[9px] px-1 rounded bg-[var(--border)]/20">
+                      {tabCount[t]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* Content */}
-          <div className="rounded-[2rem] border border-[var(--border)]/20 bg-[var(--surface)] p-6 shadow-[0_24px_64px_-40px_rgba(15,23,42,0.45)]">
-            <div key={tab} className="animate-[fadeIn_0.25s_ease]">
-              
-              {tab === "materials" && (
-                <MaterialsTab
-                  materials={materials}
-                  isTeacher={isTeacher}
-                  completedMats={completedMats}
-                  onToggleComplete={toggleComplete}
-                  onDelete={deleteMaterial}
-                  onAddClick={() => setModal("material")}
-                />
-              )}
+            {/* Content */}
+            <div className="rounded-[2rem] border border-[var(--border)]/20 bg-[var(--surface)] p-6 shadow-[0_24px_64px_-40px_rgba(15,23,42,0.45)]">
+              <div key={tab} className="animate-[fadeIn_0.25s_ease]">
+                {tab === "materials" && (
+                  <MaterialsTab
+                    materials={materials}
+                    isTeacher={isTeacher}
+                    completedMats={completedMats}
+                    onToggleComplete={toggleComplete}
+                    onDelete={deleteMaterial}
+                    onAddClick={() => setModal("material")}
+                  />
+                )}
 
-              {tab === "assignments" && (
-                <AssignmentsTab
-                  assignments={assignments}
-                  isTeacher={isTeacher}
-                  mySubmissions={mySubmissions}
-                  expandedSubs={expandedSubs}
-                  submissionText={submissionText}
-                  onSubmit={submitAssignment}
-                  onToggleSubs={toggleSubs}
-                  onDelete={deleteAssignment}
-                  onGrade={(subId, score, feedback) => {
-                    setGradingSubId(subId);
-                    setGradeForm({
-                      score: score ?? "",
-                      feedback: feedback ?? "",
-                    });
-                  }}
-                  onAddClick={() => setModal("assignment")}
-                />
-              )}
+                {tab === "assignments" && (
+                  <AssignmentsTab
+                    assignments={assignments}
+                    isTeacher={isTeacher}
+                    mySubmissions={mySubmissions}
+                    expandedSubs={expandedSubs}
+                    submissionText={submissionText}
+                    onSubmit={submitAssignment}
+                    onToggleSubs={toggleSubs}
+                    onDelete={deleteAssignment}
+                    onGrade={(subId, score, feedback) => {
+                      setGradingSubId(subId);
+                      setGradeForm({
+                        score: score ?? "",
+                        feedback: feedback ?? "",
+                      });
+                    }}
+                    onAddClick={() => setModal("assignment")}
+                  />
+                )}
 
-              {tab === "quizzes" && (
-                <QuizzesTab
-                  quizzes={quizzes}
-                  isTeacher={isTeacher}
-                  onDelete={deleteQuiz}
-                  onAddClick={() => setModal("quiz")}
-                />
-              )}
+                {tab === "quizzes" && (
+                  <QuizzesTab
+                    quizzes={quizzes}
+                    isTeacher={isTeacher}
+                    onDelete={deleteQuiz}
+                    onAddClick={() => setModal("quiz")}
+                  />
+                )}
 
-              {tab === "live-classes" && (
-                <LiveClassesTab
-                  liveClasses={liveClasses}
-                  isTeacher={isTeacher}
-                  onStatusChange={setClassStatus}
-                  onDelete={deleteLiveClass}
-                  onJoin={joinClass}
-                  onAddClick={() => setModal("live-class")}
-                />
-              )}
+                {tab === "live-classes" && (
+                  <LiveClassesTab
+                    liveClasses={liveClasses}
+                    isTeacher={isTeacher}
+                    onStatusChange={setClassStatus}
+                    onDelete={deleteLiveClass}
+                    onJoin={joinClass}
+                    onAddClick={() => setModal("live-class")}
+                  />
+                )}
 
-              {tab === "students" && isTeacher && (
-                <StudentsTab students={students} />
-              )}
+                {tab === "students" && isTeacher && (
+                  <StudentsTab students={students} />
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <Footer />
+
+      {/* Modals untouched */}
+      <GradeModal
+        isOpen={!!gradingSubId}
+        gradeForm={gradeForm}
+        onSubmit={gradeSubmission}
+        onClose={() => {
+          setGradingSubId(null);
+          setGradeForm({ score: "", feedback: "" });
+        }}
+        onChange={setGradeForm}
+      />
+      <MaterialModal
+        isOpen={modal === "material"}
+        form={matForm}
+        saving={saving}
+        onSubmit={saveMaterial}
+        onClose={() => setModal(null)}
+        onChange={setMatForm}
+      />
+      <AssignmentModal
+        isOpen={modal === "assignment"}
+        form={assForm}
+        saving={saving}
+        onSubmit={saveAssignment}
+        onClose={() => setModal(null)}
+        onChange={setAssForm}
+      />
+      <QuizModal
+        isOpen={modal === "quiz"}
+        form={quizForm}
+        saving={saving}
+        onSubmit={saveQuiz}
+        onClose={() => setModal(null)}
+        onChange={setQuizForm}
+      />
+      <LiveClassModal
+        isOpen={modal === "live-class"}
+        form={lcForm}
+        saving={saving}
+        onSubmit={saveLiveClass}
+        onClose={() => setModal(null)}
+        onChange={setLcForm}
+      />
     </div>
-
-    <Footer />
-
-    {/* Modals untouched */}
-    <GradeModal
-      isOpen={!!gradingSubId}
-      gradeForm={gradeForm}
-      onSubmit={gradeSubmission}
-      onClose={() => {
-        setGradingSubId(null);
-        setGradeForm({ score: "", feedback: "" });
-      }}
-      onChange={setGradeForm}
-    />
-    <MaterialModal
-      isOpen={modal === "material"}
-      form={matForm}
-      saving={saving}
-      onSubmit={saveMaterial}
-      onClose={() => setModal(null)}
-      onChange={setMatForm}
-    />
-    <AssignmentModal
-      isOpen={modal === "assignment"}
-      form={assForm}
-      saving={saving}
-      onSubmit={saveAssignment}
-      onClose={() => setModal(null)}
-      onChange={setAssForm}
-    />
-    <QuizModal
-      isOpen={modal === "quiz"}
-      form={quizForm}
-      saving={saving}
-      onSubmit={saveQuiz}
-      onClose={() => setModal(null)}
-      onChange={setQuizForm}
-    />
-    <LiveClassModal
-      isOpen={modal === "live-class"}
-      form={lcForm}
-      saving={saving}
-      onSubmit={saveLiveClass}
-      onClose={() => setModal(null)}
-      onChange={setLcForm}
-    />
-  </div>
-);
+  );
 }
 
 export default CourseView;
