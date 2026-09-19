@@ -1,12 +1,15 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import cookie from "cookie";
+import jwt from "jsonwebtoken";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import Anthropic from "@anthropic-ai/sdk";
 import { initIO } from "./app/services/socketService.js";
+import { requireAuth } from "./app/middleware/auth.js";
 import authRoutes from "./app/routes/auth.js";
 import courseRoutes from "./app/routes/courses.js";
 import notificationRoutes from "./app/routes/notifications.js";
@@ -38,12 +41,29 @@ export function buildApp() {
 
   initIO(io);
 
+  // ── Socket authentication ──────────────────────────────────────────────────
+  // The user identity MUST come from a verified credential. Trusting
+  // handshake.query.userId let any client join another user's personal room and
+  // receive their notifications and grades.
+  io.use((socket, next) => {
+    const token =
+      socket.handshake.auth?.token ||
+      cookie.parse(socket.handshake.headers.cookie || "")[process.env.COOKIE_NAME || "sc_token"];
+    if (!token) return next(new Error("Unauthorized"));
+    try {
+      socket.data.user = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] });
+      next();
+    } catch {
+      next(new Error("Unauthorized"));
+    }
+  });
+
   // broadcaster map: liveClassId → broadcaster's socketId
   const broadcasters = new Map();
 
   io.on("connection", (socket) => {
-    const userId = socket.handshake.query.userId;
-    if (userId) socket.join(`user:${userId}`);
+    const userId = socket.data.user.id;
+    socket.join(`user:${userId}`);
 
     // ── Course room management ──────────────────────────────────────────────
     socket.on("join-course", (courseId) => {
@@ -117,7 +137,9 @@ export function buildApp() {
 
     // ── Screen share state ──────────────────────────────────────────────────
     socket.on("screen-share-started", ({ liveClassId, screenStreamId }) => {
-      socket.to(`liveclass:${liveClassId}`).emit("screen-share-started", { liveClassId, screenStreamId });
+      socket
+        .to(`liveclass:${liveClassId}`)
+        .emit("screen-share-started", { liveClassId, screenStreamId });
     });
     socket.on("screen-share-stopped", ({ liveClassId }) => {
       socket.to(`liveclass:${liveClassId}`).emit("screen-share-stopped", { liveClassId });
@@ -225,16 +247,20 @@ export function buildApp() {
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
   // ─── Routes ─────────────────────────────────────────────────────────────────
+  // /api/auth is the only public router — everything else requires a verified
+  // JWT. requireAuth is applied at the mount point so nested routers
+  // (materials, course-scoped assignments/quizzes/live-classes) inherit it and
+  // no new sub-route can be added unprotected by accident.
   app.use("/api/auth", authRoutes);
-  app.use("/api/courses", courseRoutes);
-  app.use("/api/notifications", notificationRoutes);
-  app.use("/api", dashboardRoutes);
-  app.use("/api/assignments", assignmentRoutes);
-  app.use("/api/quizzes", quizRoutes);
-  app.use("/api/live-classes", liveClassRoutes);
-  app.use("/api/enrollments", enrollmentRoutes);
-  app.use("/api/ai", aiRoutes);
-  app.use("/api/profile", profileRoutes);
+  app.use("/api/courses", requireAuth, courseRoutes);
+  app.use("/api/notifications", requireAuth, notificationRoutes);
+  app.use("/api", requireAuth, dashboardRoutes);
+  app.use("/api/assignments", requireAuth, assignmentRoutes);
+  app.use("/api/quizzes", requireAuth, quizRoutes);
+  app.use("/api/live-classes", requireAuth, liveClassRoutes);
+  app.use("/api/enrollments", requireAuth, enrollmentRoutes);
+  app.use("/api/ai", aiRoutes); // router applies requireAuth itself
+  app.use("/api/profile", requireAuth, profileRoutes);
 
   app.get("/", (_req, res) => res.json({ message: "SmartClass API is running." }));
 

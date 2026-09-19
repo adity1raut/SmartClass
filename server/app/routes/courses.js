@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requireRole } from "../middleware/auth.js";
 import {
   createCourse,
   getCourses,
@@ -16,16 +17,16 @@ import { courseLiveClassRouter } from "./liveClass.js";
 
 const router = Router();
 
-router.post("/", createCourse);
+router.post("/", requireRole("teacher"), createCourse);
 router.get("/", getCourses);
 router.get("/:id", getCourse);
-router.patch("/:id", updateCourse);
-router.delete("/:id", deleteCourse);
+router.patch("/:id", requireRole("teacher"), updateCourse);
+router.delete("/:id", requireRole("teacher"), deleteCourse);
 
 // Enrollment management
 router.post("/:id/enroll", enrollCourse);
 router.delete("/:id/enroll", unenrollCourse);
-router.get("/:id/students", getCourseStudents);
+router.get("/:id/students", requireRole("teacher"), getCourseStudents);
 
 // Nested resources
 router.use("/:courseId/materials", materialRoutes);

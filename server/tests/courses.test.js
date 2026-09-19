@@ -73,7 +73,7 @@ describe("Courses API", () => {
         .set("Cookie", teacherCookie)
         .send({ title: "Biology", subject: "Science", teacherId: teacher.id });
 
-      const res = await request.get("/api/courses");
+      const res = await request.get("/api/courses").set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -89,14 +89,16 @@ describe("Courses API", () => {
         .set("Cookie", teacherCookie)
         .send({ title: "Chemistry", subject: "Science", teacherId: teacher.id });
 
-      const res = await request.get(`/api/courses/${created.body.id}`);
+      const res = await request.get(`/api/courses/${created.body.id}`).set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.title).toBe("Chemistry");
     });
 
     it("returns 404 for a non-existent id", async () => {
-      const res = await request.get("/api/courses/000000000000000000000000");
+      const res = await request
+        .get("/api/courses/000000000000000000000000")
+        .set("Cookie", teacherCookie);
       expect(res.status).toBe(404);
     });
   });
@@ -168,10 +170,12 @@ describe("Courses API", () => {
 
       await request
         .post(`/api/courses/${courseRes.body.id}/enroll`)
+        .set("Cookie", studentCookie)
         .send({ studentId: student.id });
 
       const res = await request
         .delete(`/api/courses/${courseRes.body.id}/enroll`)
+        .set("Cookie", studentCookie)
         .send({ studentId: student.id });
 
       expect(res.status).toBe(200);
@@ -189,6 +193,7 @@ describe("Courses API", () => {
 
       const res = await request
         .delete(`/api/courses/${created.body.id}`)
+        .set("Cookie", teacherCookie)
         .send({ teacherId: teacher.id });
 
       expect(res.status).toBe(200);

@@ -135,7 +135,9 @@ export async function generateQuiz(req, res) {
 export async function saveQuizToCourse(req, res) {
   try {
     const { courseId } = req.params;
-    const { title, questions, teacherId, timeLimit, dueDate } = req.body;
+    const { title, questions, timeLimit, dueDate } = req.body;
+    // Identity comes from the verified JWT, never from client input.
+    const teacherId = req.user.id;
 
     if (!title || !Array.isArray(questions) || questions.length === 0 || !teacherId)
       return res.status(400).json({ error: "title, questions[], and teacherId are required." });
@@ -313,6 +315,9 @@ export async function analyzeRealPerformance(req, res) {
     const { studentId, subject } = req.body;
     if (!studentId || !subject)
       return res.status(400).json({ error: "studentId and subject are required." });
+    // A student may only analyse their own record; teachers may analyse any.
+    if (studentId !== req.user.id && req.user.role !== "teacher")
+      return res.status(403).json({ error: "Forbidden." });
 
     const courses = await Course.find({
       enrolledStudents: studentId,

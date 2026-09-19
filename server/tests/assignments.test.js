@@ -24,7 +24,7 @@ beforeAll(async () => {
   courseId = course.id;
 
   // Enroll student so they can submit
-  await enrollStudent(request, courseId, student.id);
+  await enrollStudent(request, courseId, studentCookie);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -70,7 +70,9 @@ describe("Assignments API", () => {
   // ── GET /api/courses/:id/assignments ──────────────────────────────────────
   describe("GET /api/courses/:courseId/assignments", () => {
     it("returns assignment list for the course", async () => {
-      const res = await request.get(`/api/courses/${courseId}/assignments`);
+      const res = await request
+        .get(`/api/courses/${courseId}/assignments`)
+        .set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -85,7 +87,9 @@ describe("Assignments API", () => {
         .set("Cookie", teacherCookie)
         .send({ title: "Solo HW", teacherId: teacher.id });
 
-      const res = await request.get(`/api/assignments/${created.body.id}`);
+      const res = await request
+        .get(`/api/assignments/${created.body.id}`)
+        .set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.title).toBe("Solo HW");
@@ -117,7 +121,7 @@ describe("Assignments API", () => {
       const sc = await createTestCourse(request, teacherCookie, teacher.id, {
         title: "Submit Course",
       });
-      await enrollStudent(request, sc.id, student.id);
+      await enrollStudent(request, sc.id, studentCookie);
       const created = await request
         .post(`/api/courses/${sc.id}/assignments`)
         .set("Cookie", teacherCookie)
@@ -143,6 +147,7 @@ describe("Assignments API", () => {
 
       const res = await request
         .post(`/api/assignments/${created.body.id}/submit`)
+        .set("Cookie", studentCookie)
         .send({ studentId: otherStudent.id, content: "Try it" });
 
       expect(res.status).toBe(403);
@@ -156,7 +161,7 @@ describe("Assignments API", () => {
       const sc = await createTestCourse(request, teacherCookie, teacher.id, {
         title: "Subs Course",
       });
-      await enrollStudent(request, sc.id, student.id);
+      await enrollStudent(request, sc.id, studentCookie);
       const created = await request
         .post(`/api/courses/${sc.id}/assignments`)
         .set("Cookie", teacherCookie)
@@ -168,7 +173,9 @@ describe("Assignments API", () => {
         .set("Cookie", studentCookie)
         .send({ studentId: student.id, content: "Done" });
 
-      const res = await request.get(`/api/assignments/${aId}/submissions?teacherId=${teacher.id}`);
+      const res = await request
+        .get(`/api/assignments/${aId}/submissions?teacherId=${teacher.id}`)
+        .set("Cookie", teacherCookie);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThan(0);
@@ -182,7 +189,7 @@ describe("Assignments API", () => {
       const sc = await createTestCourse(request, teacherCookie, teacher.id, {
         title: "Grade Course",
       });
-      await enrollStudent(request, sc.id, student.id);
+      await enrollStudent(request, sc.id, studentCookie);
       const created = await request
         .post(`/api/courses/${sc.id}/assignments`)
         .set("Cookie", teacherCookie)
@@ -194,9 +201,9 @@ describe("Assignments API", () => {
         .set("Cookie", studentCookie)
         .send({ studentId: student.id, content: "My work" });
 
-      const subsRes = await request.get(
-        `/api/assignments/${aId}/submissions?teacherId=${teacher.id}`
-      );
+      const subsRes = await request
+        .get(`/api/assignments/${aId}/submissions?teacherId=${teacher.id}`)
+        .set("Cookie", teacherCookie);
       const submissionId = subsRes.body[0].id;
 
       const res = await request
@@ -220,6 +227,7 @@ describe("Assignments API", () => {
 
       const res = await request
         .delete(`/api/assignments/${created.body.id}`)
+        .set("Cookie", teacherCookie)
         .send({ teacherId: teacher.id });
 
       expect(res.status).toBe(200);

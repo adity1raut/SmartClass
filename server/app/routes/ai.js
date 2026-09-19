@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireRole, requireSelf, requireSelfOrRole } from "../middleware/auth.js";
 import {
   // Pass-through (no DB)
   chat,
@@ -50,25 +50,48 @@ router.post("/generate-class-agenda", generateClassAgenda);
 
 // ─── Quiz → DB ────────────────────────────────────────────────────────────────
 // Teacher saves AI-generated (and optionally edited) quiz to a course
-router.post("/courses/:courseId/save-quiz", saveQuizToCourse);
+router.post("/courses/:courseId/save-quiz", requireRole("teacher"), saveQuizToCourse);
 
 // ─── Submission feedback → DB ─────────────────────────────────────────────────
-router.post("/submissions/:submissionId/feedback", feedbackAndSave);
+router.post("/submissions/:submissionId/feedback", requireRole("teacher"), feedbackAndSave);
 
 // ─── Performance with real DB data ───────────────────────────────────────────
-router.get("/students/:studentId/performance-context", getPerformanceContext);
+router.get(
+  "/students/:studentId/performance-context",
+  requireSelfOrRole("studentId", "teacher"),
+  getPerformanceContext
+);
 router.post("/analyze-performance-real", analyzeRealPerformance);
 
 // ─── Study plans CRUD ─────────────────────────────────────────────────────────
-router.post("/students/:studentId/study-plans", generateAndSaveStudyPlan);
-router.post("/students/:studentId/study-plans/save", saveStudyPlan);
-router.get("/students/:studentId/study-plans", getStudyPlans);
+router.post("/students/:studentId/study-plans", requireSelf("studentId"), generateAndSaveStudyPlan);
+router.post("/students/:studentId/study-plans/save", requireSelf("studentId"), saveStudyPlan);
+router.get(
+  "/students/:studentId/study-plans",
+  requireSelfOrRole("studentId", "teacher"),
+  getStudyPlans
+);
 router.delete("/study-plans/:id", deleteStudyPlan);
 
 // ─── Course outlines CRUD ─────────────────────────────────────────────────────
-router.post("/teachers/:teacherId/outlines", generateAndSaveOutline);
-router.post("/teachers/:teacherId/outlines/save", saveOutline);
-router.get("/teachers/:teacherId/outlines", getOutlines);
+router.post(
+  "/teachers/:teacherId/outlines",
+  requireRole("teacher"),
+  requireSelf("teacherId"),
+  generateAndSaveOutline
+);
+router.post(
+  "/teachers/:teacherId/outlines/save",
+  requireRole("teacher"),
+  requireSelf("teacherId"),
+  saveOutline
+);
+router.get(
+  "/teachers/:teacherId/outlines",
+  requireRole("teacher"),
+  requireSelf("teacherId"),
+  getOutlines
+);
 router.delete("/outlines/:id", deleteOutline);
 
 export default router;

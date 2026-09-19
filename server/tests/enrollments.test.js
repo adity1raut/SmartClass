@@ -38,17 +38,26 @@ describe("Enrollments API", () => {
     });
 
     it("returns 400 when required fields are missing", async () => {
-      const res = await request.post("/api/enrollments").send({ studentId: student.id }); // missing courseId
+      const res = await request
+        .post("/api/enrollments")
+        .set("Cookie", studentCookie)
+        .send({ studentId: student.id }); // missing courseId
 
       expect(res.status).toBe(400);
     });
 
     it("returns 400 when already enrolled", async () => {
       // Enroll once
-      await request.post("/api/enrollments").send({ studentId: student.id, courseId });
+      await request
+        .post("/api/enrollments")
+        .set("Cookie", studentCookie)
+        .send({ studentId: student.id, courseId });
 
       // Enroll again
-      const res = await request.post("/api/enrollments").send({ studentId: student.id, courseId });
+      const res = await request
+        .post("/api/enrollments")
+        .set("Cookie", studentCookie)
+        .send({ studentId: student.id, courseId });
 
       expect(res.status).toBe(400);
     });
@@ -56,6 +65,7 @@ describe("Enrollments API", () => {
     it("returns 404 when course does not exist", async () => {
       const res = await request
         .post("/api/enrollments")
+        .set("Cookie", studentCookie)
         .send({ studentId: student.id, courseId: "000000000000000000000000" });
 
       expect(res.status).toBe(404);
@@ -66,7 +76,10 @@ describe("Enrollments API", () => {
   describe("GET /api/enrollments/my-courses", () => {
     it("returns the enrolled courses for a student", async () => {
       // Enroll first
-      await request.post("/api/enrollments").send({ studentId: student.id, courseId });
+      await request
+        .post("/api/enrollments")
+        .set("Cookie", studentCookie)
+        .send({ studentId: student.id, courseId });
 
       const res = await request
         .get(`/api/enrollments/my-courses?studentId=${student.id}`)
@@ -81,7 +94,10 @@ describe("Enrollments API", () => {
   // ── GET /api/enrollments/course/:courseId ─────────────────────────────────
   describe("GET /api/enrollments/course/:courseId", () => {
     it("returns enrollments for a course (teacher view)", async () => {
-      await request.post("/api/enrollments").send({ studentId: student.id, courseId });
+      await request
+        .post("/api/enrollments")
+        .set("Cookie", studentCookie)
+        .send({ studentId: student.id, courseId });
 
       const res = await request
         .get(`/api/enrollments/course/${courseId}?teacherId=${teacher.id}`)
@@ -95,7 +111,10 @@ describe("Enrollments API", () => {
   // ── GET /api/enrollments/progress ────────────────────────────────────────
   describe("GET /api/enrollments/progress", () => {
     it("returns course progress for an enrolled student", async () => {
-      await request.post("/api/enrollments").send({ studentId: student.id, courseId });
+      await request
+        .post("/api/enrollments")
+        .set("Cookie", studentCookie)
+        .send({ studentId: student.id, courseId });
 
       const res = await request
         .get(`/api/enrollments/progress?studentId=${student.id}&courseId=${courseId}`)
@@ -110,7 +129,10 @@ describe("Enrollments API", () => {
   describe("DELETE /api/enrollments", () => {
     it("unenrolls a student from a course", async () => {
       // Enroll first
-      await request.post("/api/enrollments").send({ studentId: student.id, courseId });
+      await request
+        .post("/api/enrollments")
+        .set("Cookie", studentCookie)
+        .send({ studentId: student.id, courseId });
 
       const res = await request
         .delete("/api/enrollments")
@@ -125,6 +147,7 @@ describe("Enrollments API", () => {
 
       const res = await request
         .delete("/api/enrollments")
+        .set("Cookie", studentCookie)
         .send({ studentId: otherStudent.id, courseId });
 
       expect(res.status).toBe(400);

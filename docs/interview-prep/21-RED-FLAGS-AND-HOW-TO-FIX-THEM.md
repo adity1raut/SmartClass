@@ -6,28 +6,68 @@
 
 ---
 
+## 21.0 Correction — the code findings were worse than first written
+
+When these fixes were actually applied, a probe of every route found something the
+first draft of this chapter understated. **The API was not merely badly-authorised
+— most of it was not authenticated at all.**
+
+Only `/api/ai` called `requireAuth`. Every other router — courses, assignments,
+quizzes, live classes, enrolments, materials, notifications, profile, dashboards —
+was mounted with no auth middleware whatsoever. Verified by starting the app with
+no database and probing: an auth gate returns 401 *before* touching the DB, and
+these routes instead reached their controllers.
+
+```
+OPEN    GET  /api/courses                      -> reached controller
+OPEN    POST /api/courses                      -> 400 (validation)
+OPEN    GET  /api/assignments/:id              -> reached controller
+OPEN    GET  /api/notifications/:userId        -> reached controller
+OPEN    GET  /api/teachers/:id/dashboard       -> reached controller
+GATED   POST /api/ai/chat                      -> 401
+```
+
+So the IDOR in §21.3 was the *second* line of defence failing. The first line was
+absent: anyone on the internet could read every course, every assignment, every
+student's notifications and every dashboard — and create or delete content —
+with no credential at all.
+
+**This is now fixed** (see §21.19). The interview lesson is sharper than the
+original one, and worth saying in these words:
+
+> *"I assumed my routes were authenticated because one of them was. I'd written
+> `requireAuth`, I'd tested it, and I never checked it was actually applied
+> everywhere — the middleware existed, the wiring didn't. What I do now is verify
+> the property rather than the code: a test that walks every route and asserts an
+> anonymous request gets 401."*
+
+---
+
 ## 21.1 Severity ranking
 
-| # | Issue | Where | Severity | Fix time |
-|---|---|---|---|---|
-| 1 | "SFU-based WebRTC" — no SFU exists | Resume | **Critical** | 5 min (resume) |
-| 2 | Authorisation from request body (IDOR) | Code | **Critical** | 1–2 days |
-| 3 | Google OAuth `isAccessToken` auth bypass | Code | **Critical** | 1 hour |
-| 4 | Unauthenticated Socket.IO rooms | Code | High | 2 hours |
-| 5 | Duplicate resume bullets (Pragyaa) | Resume | High | 5 min |
-| 6 | Unquantified claims ("significantly", "40%") | Resume | High | 30 min |
-| 7 | "Push notifications" ≠ Web Push | Resume | Medium | 2 min |
-| 8 | Skills listed without backing projects | Resume | Medium | 10 min |
-| 9 | No rate limiting anywhere | Code | Medium | 3 hours |
-| 10 | No CSRF defence with `sameSite=none` | Code | Medium | 3 hours |
-| 11 | `client/.env` tracked in git | Repo | Medium | 10 min |
-| 12 | Recordings on ephemeral local disk | Code | Medium | 1 hour |
-| 13 | In-memory state blocks horizontal scaling | Code | Medium | 1 day |
-| 14 | Missing indexes on every queried field | Code | Medium | 1 hour |
-| 15 | Role self-assignment at registration | Code | Low-Med | 30 min |
-| 16 | Late submissions never appear as "pending" | Code | Low | 15 min |
-| 17 | No TURN server | Code | Low | half day |
-| 18 | Two PR counts that look contradictory | Resume | Low | 2 min |
+*(Status column added after the fixes in §21.19.)*
+
+| # | Issue | Where | Severity | Fix time | Status |
+|---|---|---|---|---|---|
+| 0 | **No authentication on 9 of 10 routers** | Code | **Critical** | 1 hour | ✅ fixed |
+| 1 | "SFU-based WebRTC" — no SFU exists | Resume | **Critical** | 5 min (resume) | ⬜ **yours to do** |
+| 2 | Authorisation from request body (IDOR) | Code | **Critical** | 1–2 days | ✅ fixed |
+| 3 | Google OAuth `isAccessToken` auth bypass | Code | **Critical** | 1 hour | ✅ fixed |
+| 4 | Unauthenticated Socket.IO rooms | Code | High | 2 hours | ✅ fixed |
+| 5 | Duplicate resume bullets (Pragyaa) | Resume | High | 5 min | ⬜ yours |
+| 6 | Unquantified claims ("significantly", "40%") | Resume | High | 30 min | ⬜ yours |
+| 7 | "Push notifications" ≠ Web Push | Resume | Medium | 2 min | ⬜ yours |
+| 8 | Skills listed without backing projects | Resume | Medium | 10 min | ⬜ yours |
+| 9 | No rate limiting anywhere | Code | Medium | 3 hours | ⬜ open |
+| 10 | No CSRF defence with `sameSite=none` | Code | Medium | 3 hours | ⬜ open |
+| 11 | `client/.env` tracked in git | Repo | Medium | 10 min | ⬜ yours |
+| 12 | Recordings on ephemeral local disk | Code | Medium | 1 hour | ⬜ open |
+| 13 | In-memory state blocks horizontal scaling | Code | Medium | 1 day | ⬜ open |
+| 14 | Missing indexes on every queried field | Code | Medium | 1 hour | ⬜ open |
+| 15 | Role self-assignment at registration | Code | Low-Med | 30 min | ⬜ open |
+| 16 | Late submissions never appear as "pending" | Code | Low | 15 min | ⬜ open |
+| 17 | No TURN server | Code | Low | half day | ⬜ open |
+| 18 | Two PR counts that look contradictory | Resume | Low | 2 min | ⬜ yours |
 
 **Do items 1, 3, 5, 7, 11 and 18 tonight.** They are minutes of work and they are the ones that cost you credibility.
 
@@ -362,6 +402,72 @@ There is a version of this chapter where you hide all of it, hope nobody asks, a
 The version that wins is: fix what you can fix, know precisely what you couldn't, and be the candidate who says *"that line is wrong and here's what's actually true"* before they have to ask.
 
 Nobody expects a final-year student's project to be production-secure. They expect you to know whether it is.
+
+---
+
+## 21.19 What has actually been fixed (and how it was verified)
+
+These are committed. You can point an interviewer at the diff.
+
+### Changed
+
+| File | Change |
+|---|---|
+| `server/app.js` | `requireAuth` applied at every `/api/*` mount point except `/api/auth`. Nested routers (materials, course-scoped assignments/quizzes/live-classes) inherit it, so a new sub-route cannot be added unprotected by accident. |
+| `server/app.js` | Socket.IO `io.use` middleware verifies the JWT from the handshake cookie (or `auth.token`) and derives the user id from it. `handshake.query.userId` is no longer trusted. |
+| `server/app/middleware/auth.js` | `jwt.verify` now pins `algorithms: ["HS256"]`. Added `requireRole`, `requireSelf` and `requireSelfOrRole`. |
+| `server/app/controllers/authController.js` | The OAuth `isAccessToken` branch now redeems the token against Google's userinfo endpoint and uses **Google's** response as the identity. It also rejects `email_verified: false`. Profile fields are no longer read from the body. |
+| 7 controllers, 43 sites | `teacherId` / `studentId` / `userId` now come from `req.user.id`, not `req.body` / `req.query`. |
+| 8 route files | `requireRole("teacher")` on teacher-only mutations, `requireRole("student")` on submissions, `requireSelf` on dashboards and notifications, `requireSelfOrRole` on AI study-plan and performance routes. |
+| `client/src/socket.js` | Stops sending `userId` in the query; relies on the auth cookie. Reconnects when the identity changes. |
+| `server/tests/authorization.test.js` | **New.** 30+ negative tests: anonymous → 401, student on teacher routes → 403, cross-user reads → 403, and a body-supplied id failing to override the token. |
+| `server/tests/*.test.js` | 36 requests updated to carry the right cookie; `enrollStudent` helper now takes a cookie rather than a student id. |
+
+### Verified
+
+A live probe against the running app (no database needed — an auth gate rejects
+before any DB access) returned **24/24 expected results**:
+
+```
+anon: list courses                     -> 401      student: create course              -> 403
+anon: create course                    -> 401      student: grade a submission         -> 403
+anon: read notifications               -> 401      student: another's notifications    -> 403
+anon: teacher dashboard                -> 401      student: another's dashboard        -> 403
+anon: ai chat                          -> 401      teacher: another teacher's outlines -> 403
+teacher: create course                 -> passes   student: own dashboard              -> passes
+```
+
+And for the socket layer:
+
+```
+no credentials                 -> REJECTED      forged token (wrong secret) -> REJECTED
+spoofed query userId=<victim>  -> REJECTED      valid token                 -> CONNECTED
+```
+
+`npx eslint .` exits 0 and Prettier reports no drift.
+
+### NOT verified here — run this yourself
+
+**`npm test` was never executed.** This environment's proxy blocks the
+`mongodb-memory-server` binary download, so the Vitest suite could not run. The
+test files were updated to match the new auth requirements and they parse and
+lint cleanly, but they are unproven. **Run `cd server && npm test` before you
+trust them**, and expect to fix a small number of assertions — particularly
+anywhere a test asserted a specific status code on a route that is now role-gated.
+
+### Still open (deliberately)
+
+Items 9–17 in §21.1. Rate limiting, CSRF, the ephemeral recording path, the
+in-memory state, the missing indexes and TURN are all real and all unaddressed.
+The authentication and authorisation layer was fixed first because it was the only
+one where the failure is a breach rather than a degradation.
+
+### What this gives you in an interview
+
+A commit history showing you found a critical vulnerability class in your own
+project, understood why your tests could never have caught it, fixed it
+systematically rather than case by case, and verified the fix with a probe rather
+than by eye. That is a materially better story than never having had the bug.
 
 ---
 

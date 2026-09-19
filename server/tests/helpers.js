@@ -53,6 +53,8 @@ export async function createTestCourse(request, teacherCookie, teacherId, overri
 }
 
 // ─── Enroll a student in a course ─────────────────────────────────────────────
-export async function enrollStudent(request, courseId, studentId) {
-  return request.post("/api/enrollments").send({ studentId, courseId });
+// The student enrols themselves, so the request must carry THEIR cookie —
+// the server takes the student id from the verified token, not the body.
+export async function enrollStudent(request, courseId, studentCookie) {
+  return request.post("/api/enrollments").set("Cookie", studentCookie).send({ courseId });
 }
