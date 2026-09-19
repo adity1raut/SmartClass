@@ -2,7 +2,7 @@
 
 > **Built from:** `Aditya_Resume2.pdf` + a full source-code audit of the `adity1raut/SmartClass` repository.
 > **Target:** SDE / Backend / Full-Stack / Platform-Engineering roles (2026 batch, on-campus + off-campus).
-> **Size:** ~150 printed pages (A4, 11pt, 1.15 line spacing — roughly 450 words per page).
+> **Size:** 115,000+ words ≈ 256 printed pages (A4, 11pt, 1.15 line spacing — roughly 450 words per page).
 > **Last built:** 2026-09-19
 
 ---
@@ -33,12 +33,12 @@ The guide is deliberately blunt in places. There are three or four things on you
 | 06 | `06-QA-WEBRTC-AND-SOCKETIO.md` | ~140 questions on real-time: WebRTC, ICE/STUN/TURN, SDP, SFU vs mesh, Socket.IO internals, scaling. | 12 |
 | 07 | `07-QA-AI-CLAUDE-AND-AGENTS.md` | ~120 questions on LLM integration, prompt design, tool-use/agent loops, cost, latency, failure modes. | 11 |
 | 08 | `08-QA-AUTH-AND-SECURITY.md` | ~140 questions on JWT, cookies, OAuth, OTP, OWASP Top 10, and the specific vulnerabilities in your code. | 12 |
-| 09 | `09-QA-DATABASES-MONGODB-POSTGRES-REDIS.md` | ~150 questions on MongoDB/Mongoose, PostgreSQL (incl. `SKIP LOCKED`), Redis, indexing, transactions, isolation. | 13 |
-| 10 | `10-QA-NODE-EXPRESS-BACKEND.md` | ~130 questions on Node.js internals, the event loop, Express 5, streams, clustering, error handling. | 11 |
-| 11 | `11-QA-REACT-AND-FRONTEND.md` | ~150 questions on React 19, hooks, rendering, Vite, code splitting, performance, Tailwind, routing. | 12 |
+| 09 | `09-QA-DATABASES.md` | ~150 questions on MongoDB/Mongoose, PostgreSQL (incl. `SKIP LOCKED`), Redis, indexing, transactions, isolation. | 13 |
+| 10 | `10-QA-NODE-EXPRESS.md` | ~130 questions on Node.js internals, the event loop, Express 5, streams, clustering, error handling. | 11 |
+| 11 | `11-QA-REACT-FRONTEND.md` | ~150 questions on React 19, hooks, rendering, Vite, code splitting, performance, Tailwind, routing. | 12 |
 | 12 | `12-QA-DISTRIBUTED-JOB-SCHEDULER.md` | ~130 questions on your Go scheduler: claiming, retries, DLQ, heartbeats, cron, multi-tenancy, rate limiting. | 12 |
 | 13 | `13-QA-GO-LANGUAGE.md` | ~120 questions on Go: goroutines, channels, context, memory model, races, testing, `go` tooling. | 10 |
-| 14 | `14-QA-KUBERNETES-CNCF-OPENSOURCE.md` | ~140 questions on Kubernetes, your Kubescape / Fluid / KubeStellar contributions, K8s security, operators, Ginkgo. | 13 |
+| 14 | `14-QA-KUBERNETES-CNCF.md` | ~140 questions on Kubernetes, your Kubescape / Fluid / KubeStellar contributions, K8s security, operators, Ginkgo. | 13 |
 | 15 | `15-DSA-QUESTION-BANK.md` | ~200 DSA problems organised by pattern, with the approach and complexity for each. | 14 |
 | 16 | `16-CORE-CS-OS-DBMS-CN.md` | ~200 core CS questions: OS, DBMS theory, computer networks, OOP. | 14 |
 | 17 | `17-SYSTEM-DESIGN-ROUNDS.md` | 14 full system-design problems worked end-to-end, plus the framework to attack any new one. | 13 |
