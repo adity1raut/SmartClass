@@ -8,7 +8,9 @@ import { pushNotification } from "../services/notificationService.js";
 export async function createQuiz(req, res) {
   try {
     const { courseId } = req.params;
-    const { title, description, questions, timeLimit, dueDate, teacherId } = req.body;
+    const { title, description, questions, timeLimit, dueDate } = req.body;
+    // Identity comes from the verified JWT, never from client input.
+    const teacherId = req.user.id;
 
     if (!title || !teacherId)
       return res.status(400).json({ error: "title and teacherId are required." });
@@ -75,7 +77,8 @@ export async function getQuiz(req, res) {
 // ─── PATCH /api/quizzes/:id ───────────────────────────────────────────────────
 export async function updateQuiz(req, res) {
   try {
-    const { title, description, questions, timeLimit, dueDate, isActive, teacherId } = req.body;
+    const { title, description, questions, timeLimit, dueDate, isActive } = req.body;
+    const teacherId = req.user.id;
 
     const quiz = await Quiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ error: "Quiz not found." });
@@ -103,7 +106,7 @@ export async function updateQuiz(req, res) {
 // ─── DELETE /api/quizzes/:id ──────────────────────────────────────────────────
 export async function deleteQuiz(req, res) {
   try {
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     const quiz = await Quiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ error: "Quiz not found." });
@@ -127,7 +130,8 @@ export async function deleteQuiz(req, res) {
 export async function submitQuiz(req, res) {
   try {
     const { id } = req.params;
-    const { studentId, answers } = req.body;
+    const { answers } = req.body;
+    const studentId = req.user.id;
 
     if (!studentId || !Array.isArray(answers))
       return res.status(400).json({ error: "studentId and answers array are required." });
@@ -184,7 +188,7 @@ export async function submitQuiz(req, res) {
 export async function getQuizResults(req, res) {
   try {
     const { id } = req.params;
-    const { teacherId } = req.query;
+    const teacherId = req.user.id;
 
     const quiz = await Quiz.findById(id);
     if (!quiz) return res.status(404).json({ error: "Quiz not found." });
@@ -207,7 +211,7 @@ export async function getQuizResults(req, res) {
 export async function getMyResult(req, res) {
   try {
     const { id } = req.params;
-    const { studentId } = req.query;
+    const studentId = req.user.id;
 
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 

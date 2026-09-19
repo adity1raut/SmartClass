@@ -34,7 +34,7 @@ beforeAll(async () => {
   courseId = course.id;
 
   // Enroll student so they can submit quizzes
-  await enrollStudent(request, courseId, student.id);
+  await enrollStudent(request, courseId, studentCookie);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -72,6 +72,7 @@ describe("Quizzes API", () => {
       const other = await createTestUser({ role: "teacher" });
       const res = await request
         .post(`/api/courses/${courseId}/quizzes`)
+        .set("Cookie", teacherCookie)
         .send({ title: "Fake Quiz", teacherId: other.id });
 
       expect(res.status).toBe(403);
@@ -81,7 +82,9 @@ describe("Quizzes API", () => {
   // ── GET /api/courses/:id/quizzes ───────────────────────────────────────────
   describe("GET /api/courses/:courseId/quizzes", () => {
     it("returns the list of quizzes for a course", async () => {
-      const res = await request.get(`/api/courses/${courseId}/quizzes`);
+      const res = await request
+        .get(`/api/courses/${courseId}/quizzes`)
+        .set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -96,14 +99,16 @@ describe("Quizzes API", () => {
         .set("Cookie", teacherCookie)
         .send({ title: "Single Quiz", questions: QUIZ_QUESTIONS, teacherId: teacher.id });
 
-      const res = await request.get(`/api/quizzes/${created.body.id}`);
+      const res = await request.get(`/api/quizzes/${created.body.id}`).set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.title).toBe("Single Quiz");
     });
 
     it("returns 404 for a non-existent quiz", async () => {
-      const res = await request.get("/api/quizzes/000000000000000000000000");
+      const res = await request
+        .get("/api/quizzes/000000000000000000000000")
+        .set("Cookie", teacherCookie);
       expect(res.status).toBe(404);
     });
   });
@@ -159,10 +164,13 @@ describe("Quizzes API", () => {
     it("returns 403 when student is not enrolled", async () => {
       const other = await createTestUser({ role: "student" });
 
-      const res = await request.post(`/api/quizzes/${quizId}/submit`).send({
-        studentId: other.id,
-        answers: [{ questionIndex: 0, selectedOption: 1 }],
-      });
+      const res = await request
+        .post(`/api/quizzes/${quizId}/submit`)
+        .set("Cookie", studentCookie)
+        .send({
+          studentId: other.id,
+          answers: [{ questionIndex: 0, selectedOption: 1 }],
+        });
 
       expect(res.status).toBe(403);
     });
@@ -170,6 +178,7 @@ describe("Quizzes API", () => {
     it("returns 400 when answers field is missing", async () => {
       const res = await request
         .post(`/api/quizzes/${quizId}/submit`)
+        .set("Cookie", studentCookie)
         .send({ studentId: student.id });
 
       expect(res.status).toBe(400);
@@ -204,6 +213,7 @@ describe("Quizzes API", () => {
 
       const res = await request
         .delete(`/api/quizzes/${created.body.id}`)
+        .set("Cookie", teacherCookie)
         .send({ teacherId: teacher.id });
 
       expect(res.status).toBe(200);

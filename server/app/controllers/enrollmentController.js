@@ -8,7 +8,9 @@ import { pushNotification } from "../services/notificationService.js";
 // ─── POST /api/enrollments ────────────────────────────────────────────────────
 export async function enroll(req, res) {
   try {
-    const { studentId, courseId } = req.body;
+    const { courseId } = req.body;
+    // Identity comes from the verified JWT, never from client input.
+    const studentId = req.user.id;
     if (!studentId || !courseId)
       return res.status(400).json({ error: "studentId and courseId are required." });
 
@@ -58,7 +60,8 @@ export async function enroll(req, res) {
 // ─── DELETE /api/enrollments ──────────────────────────────────────────────────
 export async function unenroll(req, res) {
   try {
-    const { studentId, courseId } = req.body;
+    const { courseId } = req.body;
+    const studentId = req.user.id;
     if (!studentId || !courseId)
       return res.status(400).json({ error: "studentId and courseId are required." });
 
@@ -88,7 +91,7 @@ export async function unenroll(req, res) {
 // Student gets all their enrollments with progress
 export async function getMyEnrollments(req, res) {
   try {
-    const { studentId } = req.query;
+    const studentId = req.user.id;
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const enrollments = await Enrollment.find({ student: studentId, status: "active" })
@@ -110,7 +113,7 @@ export async function getMyEnrollments(req, res) {
 export async function getCourseEnrollments(req, res) {
   try {
     const { courseId } = req.params;
-    const { teacherId } = req.query;
+    const teacherId = req.user.id;
 
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ error: "Course not found." });
@@ -151,7 +154,8 @@ export async function getCourseEnrollments(req, res) {
 // Get a student's progress in a specific course
 export async function getCourseProgress(req, res) {
   try {
-    const { studentId, courseId } = req.query;
+    const { courseId } = req.query;
+    const studentId = req.user.id;
     if (!studentId || !courseId)
       return res.status(400).json({ error: "studentId and courseId are required." });
 

@@ -9,7 +9,9 @@ import { pushNotification } from "../services/notificationService.js";
 export async function createLiveClass(req, res) {
   try {
     const { courseId } = req.params;
-    const { title, description, scheduledAt, meetingLink, teacherId, type } = req.body;
+    const { title, description, scheduledAt, meetingLink, type } = req.body;
+    // Identity comes from the verified JWT, never from client input.
+    const teacherId = req.user.id;
 
     if (!title || !scheduledAt || !teacherId)
       return res.status(400).json({ error: "title, scheduledAt, and teacherId are required." });
@@ -126,7 +128,7 @@ export async function updateLiveClass(req, res) {
 // ─── DELETE /api/live-classes/:id ─────────────────────────────────────────────
 export async function deleteLiveClass(req, res) {
   try {
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     const liveClass = await LiveClass.findById(req.params.id);
     if (!liveClass) return res.status(404).json({ error: "Live class not found." });
@@ -151,7 +153,8 @@ export async function deleteLiveClass(req, res) {
 // Teacher starts or ends the live class
 export async function updateLiveClassStatus(req, res) {
   try {
-    const { status, teacherId } = req.body;
+    const { status } = req.body;
+    const teacherId = req.user.id;
 
     if (!["scheduled", "live", "ended"].includes(status))
       return res.status(400).json({ error: "status must be scheduled, live, or ended." });
@@ -209,7 +212,7 @@ export async function updateLiveClassStatus(req, res) {
 // ─── POST /api/live-classes/:id/join ─────────────────────────────────────────
 export async function joinLiveClass(req, res) {
   try {
-    const { userId } = req.body;
+    const userId = req.user.id;
     if (!userId) return res.status(400).json({ error: "userId is required." });
 
     const liveClass = await LiveClass.findById(req.params.id);
@@ -263,7 +266,8 @@ export async function getComments(req, res) {
 // Also handles replies: pass parentComment (comment _id) in body.
 export async function addComment(req, res) {
   try {
-    const { userId, text, parentComment } = req.body;
+    const { text, parentComment } = req.body;
+    const userId = req.user.id;
     if (!userId || !text) return res.status(400).json({ error: "userId and text are required." });
 
     const liveClass = await LiveClass.findById(req.params.id);
@@ -348,7 +352,8 @@ export async function getQuestions(req, res) {
 // ─── POST /api/live-classes/:id/questions ────────────────────────────────────
 export async function addQuestion(req, res) {
   try {
-    const { studentId, question } = req.body;
+    const { question } = req.body;
+    const studentId = req.user.id;
     if (!studentId || !question)
       return res.status(400).json({ error: "studentId and question are required." });
 
@@ -388,7 +393,7 @@ export async function addQuestion(req, res) {
 export async function markAnswered(req, res) {
   try {
     const { qId } = req.params;
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     const liveClass = await LiveClass.findById(req.params.id);
     if (!liveClass) return res.status(404).json({ error: "Live class not found." });
@@ -428,7 +433,7 @@ export async function markAnswered(req, res) {
 // The route handler attaches multer BEFORE calling this controller.
 export async function uploadRecording(req, res) {
   try {
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     const liveClass = await LiveClass.findById(req.params.id);
     if (!liveClass) return res.status(404).json({ error: "Live class not found." });

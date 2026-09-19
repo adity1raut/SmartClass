@@ -9,7 +9,9 @@ import { uploadToCloudinary } from "../utils/cloudinary.js";
 export async function createAssignment(req, res) {
   try {
     const { courseId } = req.params;
-    const { title, description, dueDate, maxScore, teacherId } = req.body;
+    const { title, description, dueDate, maxScore } = req.body;
+    // Identity comes from the verified JWT, never from client input.
+    const teacherId = req.user.id;
 
     if (!title || !teacherId)
       return res.status(400).json({ error: "title and teacherId are required." });
@@ -84,7 +86,8 @@ export async function getAssignment(req, res) {
 // ─── PATCH /api/assignments/:id ───────────────────────────────────────────────
 export async function updateAssignment(req, res) {
   try {
-    const { title, description, dueDate, maxScore, teacherId } = req.body;
+    const { title, description, dueDate, maxScore } = req.body;
+    const teacherId = req.user.id;
 
     const assignment = await Assignment.findById(req.params.id);
     if (!assignment) return res.status(404).json({ error: "Assignment not found." });
@@ -110,7 +113,7 @@ export async function updateAssignment(req, res) {
 // ─── DELETE /api/assignments/:id ──────────────────────────────────────────────
 export async function deleteAssignment(req, res) {
   try {
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     const assignment = await Assignment.findById(req.params.id);
     if (!assignment) return res.status(404).json({ error: "Assignment not found." });
@@ -142,7 +145,7 @@ export async function deleteAssignment(req, res) {
 export async function addAttachment(req, res) {
   try {
     const { id } = req.params;
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     if (!req.file) return res.status(400).json({ error: "No file provided." });
 
@@ -180,7 +183,7 @@ export async function addAttachment(req, res) {
 export async function deleteAttachment(req, res) {
   try {
     const { id, attachmentId } = req.params;
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     const assignment = await Assignment.findById(id);
     if (!assignment) return res.status(404).json({ error: "Assignment not found." });
@@ -194,7 +197,11 @@ export async function deleteAttachment(req, res) {
     try {
       const { default: cloudinary } = await import("../utils/cloudinary.js");
       await cloudinary.uploader.destroy(att.publicId, { resource_type: "raw" });
-    } catch (_) {}
+    } catch (err) {
+      // Non-critical: the DB record is still removed below even if the remote
+      // object lingers. Log it so orphaned Cloudinary files are noticeable.
+      console.error("deleteAttachment: Cloudinary destroy failed:", err.message);
+    }
 
     assignment.attachments.pull(attachmentId);
     await assignment.save();
@@ -212,7 +219,8 @@ export async function deleteAttachment(req, res) {
 export async function submitAssignment(req, res) {
   try {
     const { id } = req.params;
-    const { studentId, content, fileUrl } = req.body;
+    const { content, fileUrl } = req.body;
+    const studentId = req.user.id;
 
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
@@ -314,7 +322,7 @@ export async function submitAssignment(req, res) {
 export async function getSubmissions(req, res) {
   try {
     const { id } = req.params;
-    const { teacherId } = req.query;
+    const teacherId = req.user.id;
 
     const assignment = await Assignment.findById(id);
     if (!assignment) return res.status(404).json({ error: "Assignment not found." });
@@ -337,7 +345,7 @@ export async function getSubmissions(req, res) {
 export async function getMySubmission(req, res) {
   try {
     const { id } = req.params;
-    const { studentId } = req.query;
+    const studentId = req.user.id;
 
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
@@ -355,7 +363,8 @@ export async function getMySubmission(req, res) {
 export async function gradeSubmission(req, res) {
   try {
     const { submissionId } = req.params;
-    const { score, feedback, teacherId } = req.body;
+    const { score, feedback } = req.body;
+    const teacherId = req.user.id;
 
     const submission = await Submission.findById(submissionId).populate("assignment");
     if (!submission) return res.status(404).json({ error: "Submission not found." });

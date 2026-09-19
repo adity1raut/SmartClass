@@ -10,7 +10,9 @@ import { pushNotification } from "../services/notificationService.js";
 export async function uploadMaterialFile(req, res) {
   try {
     const { courseId } = req.params;
-    const { title, description, type, teacherId } = req.body;
+    const { title, description, type } = req.body;
+    // Identity comes from the verified JWT, never from client input.
+    const teacherId = req.user.id;
 
     if (!title || !teacherId)
       return res.status(400).json({ error: "title and teacherId are required." });
@@ -60,7 +62,8 @@ export async function uploadMaterialFile(req, res) {
 export async function addMaterial(req, res) {
   try {
     const { courseId } = req.params;
-    const { title, description, type, fileUrl, teacherId } = req.body;
+    const { title, description, type, fileUrl } = req.body;
+    const teacherId = req.user.id;
 
     if (!title || !teacherId)
       return res.status(400).json({ error: "title and teacherId are required." });
@@ -118,7 +121,8 @@ export async function getCourseMaterials(req, res) {
 export async function updateMaterial(req, res) {
   try {
     const { courseId, materialId } = req.params;
-    const { title, description, type, fileUrl, teacherId } = req.body;
+    const { title, description, type, fileUrl } = req.body;
+    const teacherId = req.user.id;
 
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ error: "Course not found." });
@@ -154,7 +158,7 @@ export async function updateMaterial(req, res) {
 export async function deleteMaterial(req, res) {
   try {
     const { courseId, materialId } = req.params;
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ error: "Course not found." });
@@ -185,7 +189,7 @@ export async function deleteMaterial(req, res) {
 export async function markComplete(req, res) {
   try {
     const { courseId, materialId } = req.params;
-    const { studentId } = req.body;
+    const studentId = req.user.id;
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const material = await Material.findOne({ _id: materialId, course: courseId });
@@ -211,7 +215,7 @@ export async function markComplete(req, res) {
 export async function unmarkComplete(req, res) {
   try {
     const { courseId, materialId } = req.params;
-    const { studentId } = req.body;
+    const studentId = req.user.id;
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     await CompletedMaterial.findOneAndDelete({ student: studentId, material: materialId });
@@ -231,6 +235,9 @@ export async function getMaterialProgress(req, res) {
     const { courseId } = req.params;
     const { studentId } = req.query;
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
+    // A student may only read their own progress; teachers may read any.
+    if (studentId !== req.user.id && req.user.role !== "teacher")
+      return res.status(403).json({ error: "Forbidden." });
 
     const [materials, completed] = await Promise.all([
       Material.find({ course: courseId }).sort({ order: 1, createdAt: 1 }),

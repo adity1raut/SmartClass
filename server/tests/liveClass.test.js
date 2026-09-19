@@ -79,6 +79,7 @@ describe("Live Classes API", () => {
       const other = await createTestUser({ role: "teacher" });
       const res = await request
         .post(`/api/courses/${courseId}/live-classes`)
+        .set("Cookie", teacherCookie)
         .send({ title: "Fake", scheduledAt: FUTURE_DATE, teacherId: other.id });
 
       expect(res.status).toBe(403);
@@ -88,7 +89,9 @@ describe("Live Classes API", () => {
   // ── GET /api/courses/:id/live-classes ──────────────────────────────────────
   describe("GET /api/courses/:courseId/live-classes", () => {
     it("returns the list of live classes for a course", async () => {
-      const res = await request.get(`/api/courses/${courseId}/live-classes`);
+      const res = await request
+        .get(`/api/courses/${courseId}/live-classes`)
+        .set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -98,14 +101,18 @@ describe("Live Classes API", () => {
   // ── GET /api/live-classes/:id ──────────────────────────────────────────────
   describe("GET /api/live-classes/:id", () => {
     it("returns a single live class by id", async () => {
-      const res = await request.get(`/api/live-classes/${liveClassId}`);
+      const res = await request
+        .get(`/api/live-classes/${liveClassId}`)
+        .set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.title).toBe("Session 1");
     });
 
     it("returns 404 for a non-existent id", async () => {
-      const res = await request.get("/api/live-classes/000000000000000000000000");
+      const res = await request
+        .get("/api/live-classes/000000000000000000000000")
+        .set("Cookie", teacherCookie);
       expect(res.status).toBe(404);
     });
   });
@@ -150,6 +157,7 @@ describe("Live Classes API", () => {
 
       await request
         .patch(`/api/live-classes/${lcId}/status`)
+        .set("Cookie", teacherCookie)
         .send({ status: "live", teacherId: teacher.id });
 
       const res = await request
@@ -188,7 +196,9 @@ describe("Live Classes API", () => {
     });
 
     it("GET /api/live-classes/:id/comments — lists all comments", async () => {
-      const res = await request.get(`/api/live-classes/${liveClassId}/comments`);
+      const res = await request
+        .get(`/api/live-classes/${liveClassId}/comments`)
+        .set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -213,7 +223,9 @@ describe("Live Classes API", () => {
     });
 
     it("GET /api/live-classes/:id/questions — lists questions", async () => {
-      const res = await request.get(`/api/live-classes/${liveClassId}/questions`);
+      const res = await request
+        .get(`/api/live-classes/${liveClassId}/questions`)
+        .set("Cookie", teacherCookie);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
@@ -245,6 +257,7 @@ describe("Live Classes API", () => {
 
       const res = await request
         .delete(`/api/live-classes/${created.body.id}`)
+        .set("Cookie", teacherCookie)
         .send({ teacherId: teacher.id });
 
       expect(res.status).toBe(200);

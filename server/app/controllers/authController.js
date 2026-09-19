@@ -169,16 +169,43 @@ export function logout(_req, res) {
 
 // POST /api/auth/google
 export async function googleAuth(req, res) {
-  const { credential, role, isAccessToken, email, name, googleId: gId, avatar } = req.body;
+  // NOTE: only `credential`/`accessToken` and `role` are read from the body.
+  // Profile fields (email, name, googleId, avatar) are deliberately NOT taken
+  // from the client — they come from Google's verified response below.
+  const { credential, role, isAccessToken } = req.body;
 
   let googleId, userEmail, userName, picture;
 
   if (isAccessToken) {
-    if (!email || !gId) return res.status(400).json({ error: "Missing Google user info." });
-    googleId = gId;
-    userEmail = email;
-    userName = name;
-    picture = avatar;
+    // SECURITY: never trust profile fields supplied by the client. Previously
+    // `email` and `googleId` were taken straight from the request body, so
+    // POSTing {isAccessToken:true, email:"victim@x.com"} issued a valid session
+    // as that user — a complete authentication bypass. The access token must be
+    // redeemed against Google and *Google's* answer used as the identity.
+    const accessToken = req.body.accessToken || req.body.credential;
+    if (!accessToken) return res.status(400).json({ error: "Google access token is required." });
+
+    let profile;
+    try {
+      const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!r.ok) return res.status(401).json({ error: "Invalid Google token." });
+      profile = await r.json();
+    } catch (err) {
+      console.error("Google userinfo error:", err.message);
+      return res.status(502).json({ error: "Could not verify Google token." });
+    }
+
+    if (!profile?.sub || !profile.email)
+      return res.status(401).json({ error: "Invalid Google token." });
+    if (profile.email_verified === false)
+      return res.status(401).json({ error: "Google email is not verified." });
+
+    googleId = profile.sub;
+    userEmail = profile.email;
+    userName = profile.name;
+    picture = profile.picture;
   } else {
     if (!credential) return res.status(400).json({ error: "Google credential is required." });
     const ticket = await googleClient.verifyIdToken({

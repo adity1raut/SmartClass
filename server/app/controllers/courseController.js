@@ -9,7 +9,9 @@ import { getIO } from "../services/socketService.js";
 // ─── POST /api/courses ────────────────────────────────────────────────────────
 export async function createCourse(req, res) {
   try {
-    const { title, description, subject, teacherId } = req.body;
+    const { title, description, subject } = req.body;
+    // Identity comes from the verified JWT, never from client input.
+    const teacherId = req.user.id;
     if (!title || !teacherId)
       return res.status(400).json({ error: "Title and teacherId are required." });
 
@@ -105,7 +107,8 @@ export async function getCourse(req, res) {
 // ─── PATCH /api/courses/:id ───────────────────────────────────────────────────
 export async function updateCourse(req, res) {
   try {
-    const { title, description, subject, teacherId } = req.body;
+    const { title, description, subject } = req.body;
+    const teacherId = req.user.id;
 
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: "Course not found." });
@@ -133,7 +136,7 @@ export async function updateCourse(req, res) {
 // ─── DELETE /api/courses/:id ──────────────────────────────────────────────────
 export async function deleteCourse(req, res) {
   try {
-    const { teacherId } = req.body;
+    const teacherId = req.user.id;
 
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: "Course not found." });
@@ -159,7 +162,7 @@ export async function deleteCourse(req, res) {
 export async function enrollCourse(req, res) {
   try {
     const { id } = req.params;
-    const { studentId } = req.body;
+    const studentId = req.user.id;
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const course = await Course.findById(id);
@@ -184,7 +187,7 @@ export async function enrollCourse(req, res) {
 export async function unenrollCourse(req, res) {
   try {
     const { id } = req.params;
-    const { studentId } = req.body;
+    const studentId = req.user.id;
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
     const course = await Course.findById(id);
@@ -207,7 +210,7 @@ export async function unenrollCourse(req, res) {
 export async function getCourseStudents(req, res) {
   try {
     const { id } = req.params;
-    const { teacherId } = req.query;
+    const teacherId = req.user.id;
 
     const course = await Course.findById(id).populate("enrolledStudents", "name email avatar");
     if (!course) return res.status(404).json({ error: "Course not found." });
